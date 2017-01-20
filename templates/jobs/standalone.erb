@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><matrix-project plugin="matrix-project@1.4.1">
+<actions/>
+<description><%= @params["description"] %></description>
+<keepDependencies>false</keepDependencies>
+<%= @params["properties"] %>
+<%= @params["scm"] %>
+<canRoam>false</canRoam>
+<disabled>false</disabled>
+<blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+<blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+<%= @params["triggers"] %>
+<concurrentBuild>false</concurrentBuild>
+<axes>
+  <% @params["axis"].each do |axis| -%>
+    <hudson.matrix.TextAxis> 
+	  <%= axis%> 
+	</hudson.matrix.TextAxis>
+  <% end -%>
+    <hudson.matrix.LabelAxis>
+      <name>label</name>
+      <values>
+        <string>docker</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+</axes>
+<%= @params["combination_filter"] %>
+<%= @params["builder"] %>
+<%= @params["publisher"] %>
+<%= @params["build_wrapper"] %>
+</matrix-project>

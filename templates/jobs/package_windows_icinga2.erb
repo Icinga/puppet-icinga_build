@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8'?><matrix-project plugin="matrix-project@1.7.1">
+  <actions/>
+  <description>Icinga 2</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>5</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>branch</name>
+          <description>The Git branch to build on.</description>
+          <defaultValue>origin/master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>pkgname</name>
+          <description>The name of the package file.</description>
+          <defaultValue>snapshot</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.5.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+		<url>git://github.com/Icinga/icinga2.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>$branch</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+	<browser class="hudson.plugins.git.browser.GithubWeb"/>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+	<triggers>
+    <hudson.triggers.TimerTrigger>
+      <spec>H H * * *</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.TextAxis>
+      <name>arch</name>
+      <values>
+        <string>x86</string>
+        <string>x86_64</string>
+      </values>
+    </hudson.matrix.TextAxis>
+    <hudson.matrix.LabelAxis>
+      <name>label</name>
+      <values>
+        <string>windows</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.BatchFile>
+      <command>if not exist build (mkdir build)&#13;
+cd build&#13;
+if &quot;%arch%&quot;==&quot;x86&quot; (&#13;
+  set gen=Visual Studio 12 2013&#13;
+  set openssl_dir=c:/local/OpenSSL-Win32&#13;
+  set wxwidgets_libdir=vc_lib&#13;
+  set boost_libdir=lib32-msvc-12.0&#13;
+  set &quot;postgres_dir=C:/Program Files (x86)/PostgreSQL/9.5&quot;&#13;
+  set &quot;MYSQL_DIR=C:/Program Files (x86)/MySQL/MySQL Connector C 6.1&quot;&#13;
+) else (&#13;
+  set gen=Visual Studio 12 2013 Win64&#13;
+  set openssl_dir=c:/local/OpenSSL-Win64&#13;
+  set wxwidgets_libdir=vc_x64_lib&#13;
+  set boost_libdir=lib64-msvc-12.0&#13;
+  set &quot;postgres_dir=C:/Program Files/PostgreSQL/9.5&quot;&#13;
+  set &quot;MYSQL_DIR=C:/Program Files/MySQL/MySQL Connector C 6.1&quot;&#13;
+)&#13;
+cmake -G &quot;%gen%&quot; -DCPACK_GENERATOR=WIX -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../inst &quot;-DPostgreSQL_ROOT=%postgres_dir%&quot; -DBOOST_ROOT=c:/local/boost_1_61_0 -DOPENSSL_ROOT_DIR=%openssl_dir% -DOPENSSL_INCLUDE_DIR=%openssl_dir%/include -DOPENSSL_LIBRARIES=%openssl_dir%/lib -DBOOST_LIBRARYDIR=c:/local/boost_1_61_0/%boost_libdir% -DICINGA2_UNITY_BUILD=ON &quot;-DFLEX_EXECUTABLE=C:/local/win_flex_bison/win_flex.exe&quot; &quot;-DBISON_EXECUTABLE=C:/local/win_flex_bison/win_bison.exe&quot; -DICINGA2_WITH_STUDIO=ON -DwxWidgets_ROOT_DIR=c:/local/wxWidgets-3.1.0 -DwxWidgets_LIB_DIR=C:/local/wxWidgets-3.1.0/lib/%wxwidgets_libdir% ..</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>del build\Icinga*.msi build\*.zip&#13;
+cmake --build build --target PACKAGE --config Release&#13;
+rem &quot;C:\Program Files\7-zip\7z&quot; a -tzip build\icinga2-symbols.zip build\Bin\Release\Release\*.pdb</command>
+    </hudson.tasks.BatchFile>
+    <hudson.tasks.BatchFile>
+      <command>cd build&#13;
+rem ctest -C Release -T test -O Test.xml --output-on-failure&#13;
+rem cmd /c &quot;C:\jenkins\ctest_convert\convert.py . C:\jenkins\ctest_convert\conv.xsl&quot; &gt; Test.xml&#13;
+move Icinga*.msi Icinga2-%pkgname%-%arch%.msi&#13;
+c:\local\curl\curl -s -X POST -k -K c:\jenkins/repo_aptly_passwd -F file=@Icinga2-%pkgname%-%arch%.msi https://icinga-aptly.icinga.netways.de/api/files/windows&#13;
+cd choco&#13;
+if NOT &quot;%pkgname%&quot; == &quot;snapshot&quot; (
+move icinga2.nupkg Icinga2-%pkgname%.nupkg&#13;
+c:\local\curl\curl -s -X POST -k -K c:\jenkins/repo_aptly_passwd -F file=@Icinga2-%pkgname%.nupkg https://icinga-aptly.icinga.netways.de/api/files/windows&#13;
+)</command>
+    </hudson.tasks.BatchFile>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

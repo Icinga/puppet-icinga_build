@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?><com.tikal.jenkins.plugins.multijob.MultiJobProject plugin="jenkins-multijob-plugin@1.20">
+  <actions/>
+  <description><%= @params["description"] %></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+<% if @params["parameter"] -%>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+<% @params["parameter"].each do |param| -%>
+        <hudson.model.StringParameterDefinition>
+          <name><%= param["name"] %></name>
+          <description><%= param["description"] %></description>
+          <defaultValue><%= param["default"] %></defaultValue>
+        </hudson.model.StringParameterDefinition>
+<% end %> 
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+<% end %> 
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+<% if @params["auth_token"] -%>
+  <authToken><%= @params["auth_token"] -%></authToken>
+<% end %>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+<% @params["phase"].each do |phase| -%>
+    <com.tikal.jenkins.plugins.multijob.MultiJobBuilder>
+      <phaseName><%= phase["name"] %></phaseName>
+      <phaseJobs>
+<% phase["jobs"].each do |job| -%>
+        <com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
+          <jobName><%= job %></jobName>
+          <currParams>true</currParams>
+          <exposedSCM>false</exposedSCM>
+          <disableJob>false</disableJob>
+          <parsingRulesPath></parsingRulesPath>
+          <maxRetries>0</maxRetries>
+          <enableRetryStrategy>false</enableRetryStrategy>
+          <enableCondition>false</enableCondition>
+          <abortAllJob><%= job["abort_all_job"] %></abortAllJob>
+          <condition></condition>
+          <configs>
+<%= phase["config"] %>
+          </configs>
+<% if !phase["killCond"] -%>
+          <killPhaseOnJobResultCondition>FAILURE</killPhaseOnJobResultCondition>
+<% else %>
+          <killPhaseOnJobResultCondition><%= phase["killCond"] -%></killPhaseOnJobResultCondition>
+<% end -%>
+          <buildOnlyIfSCMChanges>false</buildOnlyIfSCMChanges> <!-- Maybe enable -->
+        </com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
+<% end -%>
+      </phaseJobs>
+      <continuationCondition><%= phase["continuation_condition"] ? phase["continuation_condition"] : "ALWAYS" %></continuationCondition>
+    </com.tikal.jenkins.plugins.multijob.MultiJobBuilder>
+<% end -%>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+  <pollSubjobs>false</pollSubjobs>
+</com.tikal.jenkins.plugins.multijob.MultiJobProject>

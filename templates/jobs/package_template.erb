@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><matrix-project plugin="matrix-project@1.4.1">
+	<actions/>
+	  <description><%= @params["description"] %></description>
+	<keepDependencies>false</keepDependencies>
+    <properties>
+      <hudson.model.ParametersDefinitionProperty>
+        <parameterDefinitions>
+          <hudson.model.StringParameterDefinition>
+            <name>branch</name>
+            <description></description>
+            <defaultValue><%= @params["branch"] %></defaultValue>
+          </hudson.model.StringParameterDefinition>
+        </parameterDefinitions>
+      </hudson.model.ParametersDefinitionProperty>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>25</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.5.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+		<url><%= @params["repository_url"] %></url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>$branch</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <browser class="hudson.plugins.git.browser.GithubWeb"/>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+	<canRoam>false</canRoam>
+	<disabled>false</disabled>
+	<blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+	<blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+	<triggers>
+    <hudson.triggers.TimerTrigger>
+      <spec>H H * * *</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+	<concurrentBuild>false</concurrentBuild>
+	<axes>
+		<hudson.matrix.TextAxis>
+			<name>distro</name>
+			<values>
+				<% @params["distro"].each do |distro| -%>
+					<string><%= distro%></string>
+				<% end -%>
+			</values>
+		</hudson.matrix.TextAxis>
+		<hudson.matrix.TextAxis>
+			<name>arch</name>
+			<values>
+				<% @params["arch"].each do |arch| -%>
+					<string><%= arch %></string>
+				<% end -%>
+			</values>
+		</hudson.matrix.TextAxis>
+		<hudson.matrix.LabelAxis>
+			<name>label</name>
+			<values>
+				<string>docker</string>
+			</values>
+		</hudson.matrix.LabelAxis>
+	</axes>
+	<%= @params["combination_filter"] %>
+	<builders>
+		<hudson.tasks.Shell>
+			<command><%= @params["build_command"] %></command>
+		</hudson.tasks.Shell>
+	</builders>
+	<publishers>
+	</publishers>
+	<buildWrappers>
+	<com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper plugin="docker-custom-build-environment@1.6.4">
+		<selector class="com.cloudbees.jenkins.plugins.okidocki.PullDockerImageSelector">
+				<image><%= @params["docker_image"] %></image>
+		</selector>
+		<dockerHost plugin="docker-commons@1.3"/>
+		<dockerRegistryCredentials></dockerRegistryCredentials>
+		<verbose>false</verbose>
+		<volumes>
+<% if @params["docker_volume"] -%>
+<% @params["docker_volumes"].each do |volume| -%>
+			<com.cloudbees.jenkins.plugins.okidocki.Volume>
+				<hostPath><%= volume["host_path"] %></hostPath>
+				<path><%= volume["client_path"] %></path>
+			</com.cloudbees.jenkins.plugins.okidocki.Volume>
+<% end %>
+<% end %>
+		</volumes>
+		<privileged>true</privileged>
+		<group></group>
+		<command>/bin/cat</command>
+		<forcePull>true</forcePull>
+		<net>bridge</net>
+	</com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper>
+		<hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.1">
+			<colorMapName>xterm</colorMapName>
+		</hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+	  <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
+        <includes>jenkins-scripts/**</includes>
+        <excludes></excludes>
+        <flatten>false</flatten>
+        <includeAntExcludes>false</includeAntExcludes>
+        <hudsonHomeRelative>false</hudsonHomeRelative>
+        <relativeTo>home</relativeTo>
+	  </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
+		<org.jvnet.hudson.tools.versionnumber.VersionNumberBuilder plugin="versionnumber@1.5">
+			<versionNumberString>${BUILDS_TODAY}</versionNumberString>
+			<projectStartDate>1969-12-31 23:00:00.0 UTC</projectStartDate>
+			<environmentVariableName>BUILD_VERSION</environmentVariableName>
+			<environmentPrefixVariable></environmentPrefixVariable>
+			<oBuildsToday>-1</oBuildsToday>
+			<oBuildsThisMonth>-1</oBuildsThisMonth>
+			<oBuildsThisYear>-1</oBuildsThisYear>
+			<oBuildsAllTime>-1</oBuildsAllTime>
+			<skipFailedBuilds>false</skipFailedBuilds>
+			<useAsBuildDisplayName>false</useAsBuildDisplayName>
+		</org.jvnet.hudson.tools.versionnumber.VersionNumberBuilder>
+	</buildWrappers>
+</matrix-project>

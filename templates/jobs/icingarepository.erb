@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><matrix-project plugin="matrix-project@1.4.1">
+  <actions/>
+  <description><%= @params["description"] %></description>
+  <logRotator class="hudson.tasks.LogRotator">
+    <daysToKeep>-1</daysToKeep>
+    <numToKeep>5</numToKeep>
+    <artifactDaysToKeep>-1</artifactDaysToKeep>
+    <artifactNumToKeep>-1</artifactNumToKeep>
+  </logRotator>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>branch</name>
+          <description></description>
+          <defaultValue>origin/master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.3.5">
+   <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+		<url>git://github.com/Icinga/icinga-rpm-release.git</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>$branch</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+	<browser class="hudson.plugins.git.browser.GithubWeb"/>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <%= @params["combination_filter"] %>
+  <axes>
+	<hudson.matrix.TextAxis>
+	  <name>distro</name>
+	  <values>
+  <% @params["distro"].each do |distro| -%>
+	  <string><%= distro%></string>
+  <% end -%>
+	  </values>
+	</hudson.matrix.TextAxis>
+	<hudson.matrix.TextAxis>
+	  <name>arch</name>
+	  <values>
+  <% @params["arch"].each do |arch| -%>
+	  <string><%= arch%></string>
+  <% end -%>
+	  </values>
+	</hudson.matrix.TextAxis>
+    <hudson.matrix.LabelAxis>
+      <name>label</name>
+      <values>
+        <string>docker</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>case $arch in x86) arch_name=i386 ;; x86_64) arch_name=x86_64 ;; esac; root_exec setarch $arch_name jenkins-scripts/jobs/icingarepository-rpm-template</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+	<com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper plugin="docker-custom-build-environment@1.6.4">
+		<selector class="com.cloudbees.jenkins.plugins.okidocki.PullDockerImageSelector">
+			<image>net-docker-registry.adm.netways.de:5000/netways/$distro-$arch</image>
+		</selector>
+		<dockerHost plugin="docker-commons@1.3"/>
+		<dockerRegistryCredentials></dockerRegistryCredentials>
+		<verbose>false</verbose>
+		<volumes class="empty-list"/>
+		<privileged>true</privileged>
+		<group></group>
+		<command>/bin/cat</command>
+		<forcePull>true</forcePull>
+		<net>bridge</net>
+	</com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.1">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+	  <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
+        <includes>jenkins-scripts/**</includes>
+        <excludes></excludes>
+        <flatten>false</flatten>
+        <includeAntExcludes>false</includeAntExcludes>
+        <hudsonHomeRelative>false</hudsonHomeRelative>
+        <relativeTo>home</relativeTo>
+	  </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
+  </buildWrappers>
+</matrix-project>

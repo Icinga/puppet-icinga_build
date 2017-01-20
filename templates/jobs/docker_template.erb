@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><matrix-project plugin="matrix-project@1.4.1">
+  <actions/>
+  <description><%= @params["description"] %></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <%= @params["combination_filter"] %>
+  <axes>
+    <hudson.matrix.TextAxis>
+      <name>os</name>
+      <values>
+      <string><%= @params["os"] %></string>
+      </values>
+    </hudson.matrix.TextAxis>
+    <hudson.matrix.TextAxis>
+      <name>release</name>
+      <values>
+      <% @params["release"].each do |release| -%>
+	      <string><%= release%></string>
+      <% end -%>
+      </values>
+    </hudson.matrix.TextAxis>
+    <hudson.matrix.TextAxis>
+      <name>arch</name>
+      <values>
+      <% @params["arch"].each do |arch| -%>
+              <string><%= arch %></string>
+      <% end -%>
+      </values>
+    </hudson.matrix.TextAxis>
+    <hudson.matrix.LabelAxis>
+      <name>label</name>
+      <values>
+        <string>docker</string>
+      </values>
+    </hudson.matrix.LabelAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+	  <command>sudo -E jenkins-scripts/jobs/docker-<%= @params["parent"] %>-template</command>
+	</hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper plugin="docker-custom-build-environment@1.6.2">
+      <selector class="com.cloudbees.jenkins.plugins.okidocki.PullDockerImageSelector">
+        <image>net-docker-registry.adm.netways.de:5000/netways/docker-images-bootstrap-vivid</image>
+      </selector>
+		<dockerHost plugin="docker-commons@1.3"/>
+		<dockerRegistryCredentials></dockerRegistryCredentials>
+		<verbose>false</verbose>
+      <volumes>
+        <com.cloudbees.jenkins.plugins.okidocki.Volume>
+          <hostPath>/var/run/docker.sock</hostPath>
+          <path>/var/run/docker.sock</path>
+        </com.cloudbees.jenkins.plugins.okidocki.Volume>
+      </volumes>
+		<privileged>true</privileged>
+		<group></group>
+		<command>/bin/cat</command>
+		<forcePull>true</forcePull>
+		<net>bridge</net>
+    </com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.1">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+	  <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
+        <includes>jenkins-scripts/**</includes>
+        <excludes></excludes>
+        <flatten>false</flatten>
+        <includeAntExcludes>false</includeAntExcludes>
+        <hudsonHomeRelative>false</hudsonHomeRelative>
+        <relativeTo>home</relativeTo>
+	  </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>
