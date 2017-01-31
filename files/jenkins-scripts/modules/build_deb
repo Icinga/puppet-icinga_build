@@ -1,0 +1,139 @@
+#!/bin/bash
+
+mkdir -p /opt/ccache
+export PATH=/opt/ccache:$PATH
+
+if [ -e /usr/bin/gcc ]; then
+  ln -s /usr/bin/ccache /opt/ccache/gcc
+  export CC=/opt/ccache/gcc
+fi
+
+if [ -e /usr/bin/g++ ]; then
+  ln -s /usr/bin/ccache /opt/ccache/g++
+  export CXX=/opt/ccache/g++
+fi
+
+if ls /usr/bin/gcc-?.? >/dev/null 2>&1; then
+  latest_gcc=`ls -1 /usr/bin/gcc-?.? | tail -n1 | cut -f4 -d/`
+  ln -s /usr/bin/ccache /opt/ccache/$latest_gcc
+  export CC=/opt/ccache/$latest_gcc
+fi
+
+if ls /usr/bin/g++-?.? >/dev/null 2>&1; then
+  latest_gxx=`ls -1 /usr/bin/g++-?.? | tail -n1 | cut -f4 -d/`
+  ln -s /usr/bin/ccache /opt/ccache/$latest_gxx
+  export CXX=/opt/ccache/$latest_gxx
+fi
+
+pushd `pwd`
+# Update version
+version=`grep ^Version: $project.spec | head -n 1 | awk '{print $2}'`
+distname="$repoprefix-`echo $distro | cut -f2 -d-`-snapshots"
+
+case "$branch" in
+tags/*)
+  distname="icinga-`echo $distro | cut -f2 -d-`"
+  ;;
+*)
+  distname="icinga-`echo $distro | cut -f2 -d-`-snapshots"
+  version="$version+snapshot`date +%Y.%m.%d`+$BUILD_VERSION"
+  ;;
+esac
+
+version="$version~`echo $distro | cut -f2 -d-`"
+echo "Building for $distname $version"
+
+apt-get install -y devscripts libfile-fcntllock-perl
+
+echo "Unpack the source tarball"
+mkdir -p /var/tmp/buildd
+mount -t tmpfs none /var/tmp/buildd
+cd /var/tmp/buildd
+tar xfz $WORKWORK/$project.tar.gz
+cd $project
+
+dch -b --newversion="$version" --distribution="$distname" -- \
+     "Snapshot build for version $version" \
+     "based on GIT branch $GIT_BRANCH ($GIT_COMMIT)" \
+     "WARNING: this build is intended for testing and experimental usage and" \
+     "should not be used in a production environment!" < /dev/null
+
+# fix source format
+#echo "3.0 (native)" > debian/source/format
+
+useradd -u 5000 -d /var/tmp/buildd buildd
+chown -R buildd /var/tmp/buildd
+
+#sed -i 's#ftp\(://\(\w\+\.\?\)\+\.debian.org\)#http\1#' /etc/apt/sources.list
+##sed -i 's#ftp\(://ftp\(\.\w\+\)*\.debian.org\)#http://http.debian.net#' /etc/apt/sources.list
+
+if [ "$distro" = "debian-squeeze" ]; then
+  cat >/etc/apt/sources.list.d/squeeze-backports.list <<APTSRC
+deb http://http.debian.net/debian-backports squeeze-backports main
+deb-src http://http.debian.net/debian-backports squeeze-backports main
+APTSRC
+fi
+
+if [ "$distro" = "debian-squeeze" ]; then
+  apt-get install -t squeeze-backports -y --force-yes debhelper cmake
+fi
+
+if [ "$distro" != "debian-squeeze" ]; then
+  apt-get install -y --force-yes eatmydata
+  EATMYDATA="eatmydata"
+else
+  EATMYDATA=""
+fi
+
+echo 8 > debian/compat
+
+# Install build dependencies
+
+#preinstall so icinga does not explode that much
+if [ "$project" = "icinga" ]; then
+  if [ "$distro" = "debian-unstable" ]; then
+    $EATMYDATA apt-get install -y libgd-dev
+  fi
+  if [ "$distro" = "debian-squeeze" -o "$distro" = "debian-wheezy" -o "$distro" = "debian-unstable" -o "$distro" = "ubuntu-precise" -o "$distro" = "raspbian-wheezy" ]; then
+    $EATMYDATA apt-get install -y libgd2-noxpm-dev
+  fi
+fi
+
+prefix="dpkg-checkbuilddeps:.* Unmet build dependencies:"
+pkgs=`dpkg-checkbuilddeps 2>&1 | grep "^$prefix" | sed -e "s/$prefix//" -e s'/([^)]*)//g' -e 's/ \+| \+/|/g'`
+$EATMYDATA apt-get install -y --force-yes $pkgs fakeroot
+#apt-get install equivs -y
+#yes | mk-build-deps -i -t aptitude
+#dpkg -i $project-build-deps*
+#$EATMYDATA apt-get install -f -y
+
+# Build arch-independent packages on armhf/x86
+case "$distro" in
+  raspbian-*)
+    common_arch="armhf"
+    ;;
+  *)
+    common_arch="x86_64"
+    ;;
+esac
+
+if [ "$arch" != "$common_arch" ]; then
+  binopts="-B"
+fi
+
+rm -rf $WORKWORK/DEBS
+mkdir -p $WORKWORK/DEBS
+chown buildd $WORKWORK/DEBS
+
+su buildd -c "sh -ex" <<BUILD
+  cd /var/tmp/buildd/$project
+
+  export DEB_BUILD_OPTIONS="nocheck"
+  export CFLAGS="-g -O2 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2"
+  export CXXFLAGS="-g -O2 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2"
+
+  $EATMYDATA dpkg-buildpackage -rfakeroot $binopts
+BUILD
+popd
+
+cp -a /var/tmp/buildd/*.deb $WORKWORK/DEBS

@@ -1,0 +1,129 @@
+#!/bin/bash
+
+repo=icinga
+
+aptly_distro=$distro
+distro_name=$(echo $distro | cut -f1 -d-)
+distro_version=$(echo $distro | cut -f2 -d-)
+
+function restart_aptly {
+	ssh -i $WORKSPACE/jenkins-scripts/modules/repo_aptly_ssh -o StrictHostKeyChecking=False jenkins-aptly@icinga-aptly.icinga.netways.de sudo systemctl restart aptly-api
+	sleep 10
+}
+
+case "$distro" in
+sles-*)
+  aptly_distro="SUSE-$distro_version"
+  ;;
+opensuse-*)
+  aptly_distro="openSUSE-$distro_version"
+  ;;
+centos-*)
+  aptly_distro="epel-$distro_version"
+  ;;
+esac
+
+if [ "$aptly_project" = "" ]; then
+  aptly_project=$project
+fi
+
+if [ "$package_type" = "deb" ]; then
+  deb_distro="$repo-$distro_version"
+
+  case "$reponame" in
+    release)
+      ;;
+    giraffe)
+      deb_distro="$deb_distro-giraffe"
+      ;;
+    snapshot)
+      deb_distro="$deb_distro-snapshots"
+      ;;
+  esac
+
+  deb_repo="$repo-$distro-$reponame"
+
+  if [ "$arch" != "$common_arch" ]; then
+    artifacts="*.deb"
+  else
+    artifacts="*.deb /var/tmp/buildd/*.dsc /var/tmp/buildd/*.tar.gz /var/tmp/buildd/*.tar.xz"
+  fi
+
+  pushd $WORKWORK/DEBS
+  for artifact in $(shopt -s nullglob; echo $artifacts); do
+    #File upload
+	for i in $(seq 1 5); do
+		res=$( curl -w %{http_code} -s --output /dev/null -X POST -k \
+           -K $WORKSPACE/jenkins-scripts/modules/repo_aptly_passwd -F file=@$artifact \
+           https://icinga-aptly.icinga.netways.de/api/files/$aptly_project-$aptly_distro-$arch-$reponame )
+
+		if [ "$res" = "200" ] ;then
+			break
+		else
+        	restart_aptly
+		fi
+		sleep 5
+	done
+    if [ "$res" != "200" ] ; then
+        exit 1
+    fi
+
+  done
+  #Add to repo
+  res=$( curl -w %{http_code} -s --output /dev/null -X POST -k -K $WORKSPACE/jenkins-scripts/modules/repo_aptly_passwd \
+         https://icinga-aptly.icinga.netways.de/api/repos/$deb_repo/file/$aptly_project-$aptly_distro-$arch-$reponame )
+
+  if [ "$res" != "200" ] ; then
+    exit 1
+  fi
+
+  #Publish repo
+  res=$( curl -w %{http_code} -s --output /dev/null -X PUT -k -K $WORKSPACE/jenkins-scripts/modules/repo_aptly_passwd \
+         -H 'Content-Type: application/json'  --data {} \
+         https://icinga-aptly.icinga.netways.de/api/publish/$distro_name/$deb_distro )
+
+  #Wenn das Repo schon existiert updaten
+  if [ "$res" != "200" ] ; then
+    res=$( curl -w %{http_code} -s --output /dev/null -X POST -k -K $WORKSPACE/jenkins-scripts/modules/repo_aptly_passwd \
+           -H 'Content-Type: application/json' \
+           --data '{"SourceKind": "local", "Sources": [{"Name": "'"$deb_repo"'"}], "Architectures": ["i386","amd64","source"], "Distribution": "'"$deb_distro"'"}' \
+           https://icinga-aptly.icinga.netways.de/api/publish/$distro_name )
+  fi
+
+  if [ "$res" != "200" -a "$res" != "201" ] ; then
+    exit 1
+  fi
+
+  popd
+fi
+
+if [ "$package_type" = "rpm" ]; then
+  for dir in $WORKWORK/RPMS/*; do
+    pushd $dir
+    for rpm in *.rpm; do
+      if [ "$update_both_repos" = "yes" ]; then
+        repos="snapshot giraffe release"
+      else
+        repos="$reponame"
+      fi
+
+      for repo in $repos; do
+		for i in $(seq 1 5); do
+          res=$( curl -w %{http_code} -s --output /dev/null -X POST -k \
+               -K $WORKSPACE/jenkins-scripts/modules/repo_aptly_passwd -F file=@$rpm \
+               https://icinga-aptly.icinga.netways.de/api/files/$aptly_project-$aptly_distro-$arch-$repo )
+          if [ "$res" = "200" ] ;then
+			break
+		  else
+            restart_aptly
+		  fi
+		  sleep 5
+		done
+        if [ "$res" != "200" ] ; then
+          exit 1
+        fi
+      done
+    done
+    popd
+  done
+fi

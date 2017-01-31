@@ -1,0 +1,77 @@
+#!/bin/bash
+
+export WORKWORK=/root/workwork
+cp -r $WORKSPACE $WORKWORK
+cd $WORKWORK
+
+case "$branchmodel" in
+snapshot)
+  buildtype=snapshot
+  ;;
+release)
+  buildtype=release
+  ;;
+*)
+  case $branch in
+  origin/master)
+    buildtype=snapshot
+    ;;
+  origin/support/*)
+    buildtype=giraffe
+    ;;
+  tags/*)
+    buildtype=release
+    ;;
+  *)
+    buildtype=test
+    ;;
+  esac
+  ;;
+esac
+
+# Install python-pip and simplejson
+if [ "$distro" = "centos-5" ]; then
+  source jenkins-scripts/modules/repo_repoforge
+
+  success=0
+  for i in $(seq 10); do
+    if yum install -y python-simplejson; then
+      success=1
+      break;
+    fi
+    sleep 10
+  done
+  if [ "0" == "$success" ]; then
+    exit 1
+  fi
+fi
+
+# Install build requirements
+case "$distro" in
+  centos-*|fedora-*)
+    success=0
+    for i in $(seq 10); do
+      if yum install -y git; then
+        success=1
+        break;
+      fi
+      sleep 10
+    done
+    if [ "0" == "$success" ]; then
+      exit 1
+    fi
+    ;;
+  debian-*|ubuntu-*)
+    apt-get update
+    ;;
+esac
+
+# Figure out the repository name
+ticketid=`echo $branch | rev | cut -d- -f1 | rev`
+reponame=`jenkins-scripts/modules/get_ticket_repository dev.icinga.org $ticketid`
+if [ -z "$reponame" ]; then
+  reponame=$buildtype
+fi
+
+export reponame
+export buildtype

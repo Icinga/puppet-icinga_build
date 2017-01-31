@@ -1,0 +1,91 @@
+#!/bin/bash -ex
+export project=icinga2
+repoprefix=icinga
+
+source jenkins-scripts/modules/prepare_build_job
+
+# Build the source tarball
+git archive --format=tar --prefix=$project/ -o $project.tar HEAD
+md5sum $project.tar
+echo "#define VERSION \"`git describe --tags`\"" > icinga-version.h.force
+touch -d`date +%Y%m%d` icinga-version.h.force
+tar --append -f $project.tar --transform "s@^@$project/@" icinga-version.h.force
+
+# Append the Debian pkg files
+rm -rf pkg-$project
+
+success=0
+for i in $(seq 10); do
+  if git clone git://github.com/Icinga/pkg-$project-debian.git pkg-$project; then
+    success=1
+    break;
+  fi
+  sleep 10
+done
+if [ "0" ==  "$success" ]; then
+  exit 1
+fi
+
+if [ "$(echo "$distro" | cut -d'-' -f1)" = "ubuntu" ]; then
+	(cd pkg-$project; git checkout ubuntu)
+else
+	(cd pkg-$project; git checkout development)
+fi
+
+# Patch some of the debian files
+case "$distro" in
+debian-squeeze|debian-wheezy|ubuntu-saucy|ubuntu-precise|raspbian-wheezy)
+  sed -i 's/--with systemd//' pkg-$project/debian/rules
+  sed -i '/dh-systemd (>= 1.5),/d' pkg-$project/debian/control
+  sed -i '/libwxgtk3.0-dev,/d' pkg-$project/debian/control
+  sed -i 's/-DICINGA2_WITH_STUDIO=true/-DICINGA2_WITH_STUDIO=false/' pkg-$project/debian/rules
+  rm -f pkg-$project/debian/icinga2-studio.install
+  sed -i '/Package: icinga2-studio/,/^\s*$/{d}' pkg-$project/debian/control
+  ;;
+esac
+
+echo "3.0 (native)" > pkg-$project/debian/source/format
+
+case "$distro" in
+ubuntu-precise|debian-squeeze)
+  sed -i 's@usr/lib/\*/icinga2@usr/lib/icinga2@' pkg-$project/debian/*.install pkg-$project/debian/rules
+  sed -i 's@if \[ -d debian/icinga2-common/ \]; then chmod +x debian/icinga2-common/usr/lib/icinga2/prepare-dirs; fi@@' pkg-$project/debian/rules
+  sed -i 's@dh_install$@dh_install -Xprepare-dirs@' pkg-$project/debian/rules
+  ;;
+esac
+
+
+if [ "$distro" = "debian-squeeze" ]; then
+  cat >>/etc/apt/sources.list << APTSRC
+deb http://http.debian.net/debian-backports squeeze-backports main
+deb-src http://http.debian.net/debian-backports squeeze-backports main
+APTSRC
+fi
+
+apt-get update
+
+if [ "$distro" = "debian-squeeze" ]; then
+  apt-get install -t squeeze-backports -y --force-yes --reinstall debhelper cmake
+fi
+
+tar --append -f $project.tar --transform "s@^@$project/@" -C pkg-$project debian
+gzip -n < $project.tar > $project.tar.gz
+md5sum $project.tar.gz
+
+source jenkins-scripts/modules/build_deb
+export package_type=deb
+export arch
+source jenkins-scripts/modules/repo_aptly
+
+#pushd DEBS
+#cat >dput.cf <<DPUT
+#[icinga]
+#fqdn = packages.icinga.org
+#incoming = /home/debianrepo/`echo $distro | cut -f1 -d-`/incoming/
+#method = local
+#allowed_distributions = icinga-.*
+#allow_unsigned_uploads = 1
+#DPUT
+#
+#dput -c dput.cf icinga *.changes
+#popd
