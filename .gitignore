@@ -1,0 +1,7 @@
+## Ruby
+/Gemfile.lock
+
+## editors
+[._]*.s[a-w][a-z]
+/.idea/
+*~
