@@ -67,11 +67,13 @@ case "$distro" in
 esac
 
 # Figure out the repository name
-ticketid=`echo $branch | rev | cut -d- -f1 | rev`
-reponame=`jenkins-scripts/modules/get_ticket_repository dev.icinga.org $ticketid`
-if [ -z "$reponame" ]; then
-  reponame=$buildtype
-fi
+# TODO: reactivate feature?
+#ticketid=`echo $branch | rev | cut -d- -f1 | rev`
+#reponame=`jenkins-scripts/modules/get_ticket_repository dev.icinga.org $ticketid`
+#if [ -z "$reponame" ]; then
+#  reponame=$buildtype
+#fi
+reponame=$buildtype
 
 export reponame
 export buildtype
