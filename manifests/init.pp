@@ -7,8 +7,11 @@ class icinga_build(
 
   contain ::icinga_build::scripts
 
+  include ::icinga_build::pipeline::defaults
+
   create_resources('icinga_build::folder', hiera_hash('icinga_build::folder', {}))
   create_resources('icinga_build::job',    hiera_hash('icinga_build::job', {}))
+  create_resources('icinga_build::pipeline', hiera_hash('icinga_build::pipeline', {}))
   create_resources('jenkins::plugin',      hiera_hash('jenkins::plugin', {}))
 
   if $ssh_private_key {
