@@ -1,0 +1,10 @@
+fixtures:
+  forge_modules:
+    archive: "puppet/archive"
+    apt:     "puppetlabs/apt"
+    java:    "puppetlabs/java"
+    stdlib:  "puppetlabs/stdlib"
+    jenkins: "rtyler/jenkins"
+
+  symlinks:
+    icinga_build: "#{source_dir}"

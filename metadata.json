@@ -1,0 +1,27 @@
+{
+  "name": "icinga-icinga_build",
+  "version": "1.0.0",
+  "author": "Icinga Development Team",
+  "summary": "Managing the Icinga Buildserver",
+  "license": "Apache-2.0",
+  "source": "https://github.com/Icinga/puppet-icinga_build.git",
+  "project_page": "https://github.com/Icinga/puppet-icinga_build",
+  "issues_url": "https://github.com/Icinga/puppet-icinga_build/issues",
+  "dependencies": [
+    {"name":"puppetlabs/java","version_requirement":">= 1.2.0 < 2.0.0"},
+    {"name":"puppetlabs/stdlib","version_requirement":">= 4.4.0 < 5.0.0"},
+    {"name":"rtyler/jenkins","version_requirement":">= 1.6.0 < 2.0.0"}
+  ],
+  "requirements": [
+    { "name": "puppet", "version_requirement": ">= 3.8.0 < 5.0.0" }
+  ],
+  "data_provider": null,
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8"
+      ]
+    }
+  ]
+}
