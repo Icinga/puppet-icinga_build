@@ -1,4 +1,6 @@
-class icinga_build($ssh_private_key = undef) {
+class icinga_build(
+  $ssh_private_key = undef,
+) {
   contain ::jenkins
   contain ::jenkins::cli_helper
 
