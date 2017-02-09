@@ -1,6 +1,8 @@
 Icinga Build Puppet module
 ==========================
 
+[![Build Status](https://travis-ci.org/Icinga/puppet-icinga_build.svg?branch=master)](https://travis-ci.org/Icinga/puppet-icinga_build)
+
 Managing the Icinga Build system, taking care of:
 
 * Packaging jobs for Debian, RedHat, SuSE (and alike)

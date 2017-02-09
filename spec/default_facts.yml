@@ -1,1 +1,4 @@
+---
 concat_basedir: "/tmp"
+is_pe: false
+jenkins_plugins: ''
