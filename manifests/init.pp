@@ -3,11 +3,13 @@ class icinga_build(
 ) {
   contain ::jenkins
   contain ::jenkins::cli_helper
+  contain ::jenkins::cli::config
 
   contain ::icinga_build::scripts
 
-  create_resources('icinga_build::job', hiera_hash('jenkins::job', {}))
-  create_resources('jenkins::plugin', hiera_hash('jenkins::plugin', {}))
+  create_resources('icinga_build::folder', hiera_hash('icinga_build::folder', {}))
+  create_resources('icinga_build::job',    hiera_hash('icinga_build::job', {}))
+  create_resources('jenkins::plugin',      hiera_hash('jenkins::plugin', {}))
 
   if $ssh_private_key {
     file { 'jenkins ssh dir':
@@ -27,5 +29,4 @@ class icinga_build(
       mode    => '0600',
     }
   }
-
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- MANAGED BY PUPPET - Do not update manually! --><com.cloudbees.hudson.plugins.folder.Folder plugin="cloudbees-folder@5.16">
+  <actions/>
+  <%- if @description -%>
+  <description><%= @description.encode(xml: :text) %></description>
+  <%- else -%>
+  <description/>
+  <%- end -%>
+  <properties/>
+  <folderViews class="com.cloudbees.hudson.plugins.folder.views.DefaultFolderViewHolder">
+    <views>
+      <hudson.model.AllView>
+        <owner class="com.cloudbees.hudson.plugins.folder.Folder" reference="../../../.."/>
+        <name>All</name>
+        <filterExecutors>false</filterExecutors>
+        <filterQueue>false</filterQueue>
+        <properties class="hudson.model.View$PropertyList"/>
+      </hudson.model.AllView>
+      <%- if @_views_xml -%>
+<%= @_views_xml %>
+      <%- end -%>
+    </views>
+    <tabBar class="hudson.views.DefaultViewsTabBar"/>
+  </folderViews>
+  <healthMetrics>
+    <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
+      <nonRecursive>false</nonRecursive>
+    </com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
+  </healthMetrics>
+  <icon class="com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon"/>
+</com.cloudbees.hudson.plugins.folder.Folder>
