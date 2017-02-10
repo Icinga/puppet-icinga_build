@@ -40,7 +40,9 @@
     <hudson.matrix.TextAxis>
       <name>arch</name>
       <values>
-        <string><%= @arch.join(' ').encode(xml: :text) %></string>
+        <%- @arch.each do |arch| -%>
+        <string><%= arch.encode(xml: :text) %></string>
+        <%- end -%>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
