@@ -1,0 +1,38 @@
+<% @views_hash.each do |name, view| -%>
+      <org.jenkinsci.plugins.categorizedview.CategorizedJobsView plugin="categorized-view@1.8">
+        <owner class="com.cloudbees.hudson.plugins.folder.Folder" reference="../../../.."/>
+        <name><%= name.encode(xml: :text) %></name>
+        <filterExecutors>false</filterExecutors>
+        <filterQueue>false</filterQueue>
+        <properties class="hudson.model.View$PropertyList"/>
+        <jobNames>
+          <comparator class="hudson.util.CaseInsensitiveComparator"/>
+        </jobNames>
+        <jobFilters/>
+        <columns>
+          <%-# TODO: make configurable -%>
+          <hudson.views.StatusColumn/>
+          <hudson.views.WeatherColumn/>
+          <org.jenkinsci.plugins.categorizedview.IndentedJobColumn/>
+          <hudson.views.LastSuccessColumn/>
+          <hudson.views.LastFailureColumn/>
+          <hudson.views.LastDurationColumn/>
+          <hudson.views.BuildButtonColumn/>
+        </columns>
+        <includeRegex><%= view['include_regex'].encode(xml: :text) %></includeRegex>
+        <recurse>true</recurse>
+        <groupingRules/>
+        <%- if view['grouping_rules'] -%>
+        <categorizationCriteria>
+          <%- view['grouping_rules'].each do |rule| -%>
+          <org.jenkinsci.plugins.categorizedview.GroupingRule>
+            <groupRegex><%= rule['regex'].to_s.encode(xml: :text) %></groupRegex>
+            <namingRule><%= rule['name'].to_s.encode(xml: :text) %></namingRule>
+          </org.jenkinsci.plugins.categorizedview.GroupingRule>
+          <%- end -%>
+        </categorizationCriteria>
+        <%- else -%>
+        <categorizationCriteria/>
+        <%- end -%>
+      </org.jenkinsci.plugins.categorizedview.CategorizedJobsView>
+<%- end if @views_hash-%>

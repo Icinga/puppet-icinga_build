@@ -10,8 +10,10 @@
 #
 # @param jenkins_label  The slave label in Jenkins to bind the job to
 # @param docker_image   Docker image to build with, the following patterns get replaced: {os}, {dist}, {arch}
+# @param views_hash     Configuration categorized views for the pipeline folder
 #
 class icinga_build::pipeline::defaults(
   $docker_image  = undef,
   $jenkins_label = undef,
+  $views_hash    = undef,
 ) {}

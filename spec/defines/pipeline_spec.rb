@@ -45,6 +45,7 @@ describe 'icinga_build::pipeline' do
             .with_description(/Test description/)
             .with_description(/for icinga2/)
             .with_description(/target snapshot/)
+            .with_views_xml('')
           should contain_jenkins_job('icinga2-snapshot')
         end
 
@@ -88,6 +89,26 @@ describe 'icinga_build::pipeline' do
               'ubuntu-xenial' => {
                 'use' => 'ubuntu'
               }
+            },
+            views_hash:     {
+              'Deb' => {
+                'include_regex'  => '^deb-.*',
+                'grouping_rules' => [
+                  {
+                    'regex' => '^deb-([\w\d_\.]+)-([\w\d_\.]+)-',
+                    'name'  => '$1 $2'
+                  }
+                ]
+              },
+              'RPM' => {
+                'include_regex'  => '^rpm-.*',
+                'grouping_rules' => [
+                  {
+                    'regex' => '^rpm-([\w\d_\.]+)-([\w\d_\.]+)-',
+                    'name'  => '$1 $2'
+                  }
+                ]
+              }
             }
           }
         end
@@ -104,6 +125,12 @@ describe 'icinga_build::pipeline' do
             .with_description(/Test description/)
             .with_description(/for icinga2/)
             .with_description(/target release/)
+            .with_views_xml(/CategorizedJobsView/)
+            .with_views_xml(%r{<name>Deb</name>})
+            .with_views_xml(%r{<includeRegex>\^deb-.*</includeRegex>})
+            .with_views_xml(%r{<namingRule>\$1 \$2</namingRule>})
+            .with_views_xml(%r{<name>RPM</name>})
+            .with_views_xml(%r{<includeRegex>\^rpm-.*</includeRegex>})
           should contain_jenkins_job('icinga2')
         end
 

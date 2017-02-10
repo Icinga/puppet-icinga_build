@@ -8,7 +8,10 @@ define icinga_build::pipeline (
   $matrix_rpm     = { },
   $docker_image   = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
+  $views_hash     = $icinga_build::pipeline::defaults::views_hash,
 ) {
+  if $views_hash { validate_hash($views_hash) }
+
   if $product and $target {
     $_product = $product
     $_target = $target
@@ -30,6 +33,7 @@ define icinga_build::pipeline (
   icinga_build::folder { $title:
     ensure      => present,
     description => "Icinga build pipeline for ${_product} with release target ${_target}\n\n${description}",
+    views_xml   => template('icinga_build/views/pipeline.xml.erb'),
   }
 
   # TODO: what to do with target?

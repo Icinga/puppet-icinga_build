@@ -1,10 +1,8 @@
 define icinga_build::folder (
   $ensure      = 'present',
   $description = '',
+  $views_xml   = undef,
 ) {
-  # TODO: allow views via Hash
-  $_views_xml = ''
-
   jenkins_job { $title:
     ensure => $ensure,
     name   => $name,
