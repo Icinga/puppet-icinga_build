@@ -30,6 +30,10 @@ describe 'icinga_build::pipeline' do
             matrix_deb:     {
               'debian-jessie' => {},
               'debian-wheezy' => {}
+            },
+            matrix_rpm:     {
+              'centos-6' => {},
+              'centos-7' => {}
             }
           }
         end
@@ -61,6 +65,7 @@ describe 'icinga_build::pipeline' do
 
           # for coverage
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-0source')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-1binary')
         end
 
         it do
@@ -69,6 +74,28 @@ describe 'icinga_build::pipeline' do
           # for coverage
           should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-0source')
           should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-1binary')
+        end
+
+        it do
+          should contain_icinga_build__pipeline__rpm('icinga2-snapshot-centos-7')
+            .with_product('icinga2')
+            .with_pipeline('icinga2-snapshot')
+            .with_control_repo(params[:control_repo])
+            .with_control_branch(params[:control_branch])
+            .with_jenkins_label('docker-test')
+            .with_docker_image('private-registry:5000/icinga/{os}-{dist}-{arch}')
+
+          # for coverage
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-0source')
+          # should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-1binary')
+        end
+
+        it do
+          should contain_icinga_build__pipeline__rpm('icinga2-snapshot-centos-6')
+
+          # for coverage
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-0source')
+          # should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-1binary')
         end
       end
 

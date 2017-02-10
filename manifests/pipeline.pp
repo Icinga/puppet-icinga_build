@@ -35,6 +35,7 @@ define icinga_build::pipeline (
     ensure      => present,
     description => "Icinga build pipeline for ${_product} with release target ${_target}\n\n${description}",
     views_xml   => template('icinga_build/views/pipeline.xml.erb'),
+    icon        => 'aggregate-status',
   }
 
   # TODO: what to do with target?

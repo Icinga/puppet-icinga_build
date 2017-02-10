@@ -26,5 +26,11 @@
       <nonRecursive>false</nonRecursive>
     </com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
   </healthMetrics>
+  <%- if @icon == 'aggregate-status' -%>
+  <icon class="com.github.mjdetullio.jenkins.plugins.multibranch.BallColorFolderIcon" plugin="multi-branch-project-plugin@0.4.2">
+    <owner class="com.cloudbees.hudson.plugins.folder.Folder" reference="../.."/>
+  </icon>
+  <%- else -%>
   <icon class="com.cloudbees.hudson.plugins.folder.icons.StockFolderIcon"/>
+  <%- end -%>
 </com.cloudbees.hudson.plugins.folder.Folder>

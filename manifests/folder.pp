@@ -2,7 +2,10 @@ define icinga_build::folder (
   $ensure      = 'present',
   $description = '',
   $views_xml   = undef,
+  $icon        = 'folder',
 ) {
+  validate_re($icon, '^(folder|aggregate-status)$')
+
   jenkins_job { $title:
     ensure => $ensure,
     name   => $name,
