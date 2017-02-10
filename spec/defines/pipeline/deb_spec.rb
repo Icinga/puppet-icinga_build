@@ -15,7 +15,7 @@ describe 'icinga_build::pipeline::deb' do
         let :pre_condition do
           "
           class { 'icinga_build::pipeline::defaults':
-            arch          => ['x86_64', 'i386'],
+            arch          => ['x86_64', 'x86'],
             jenkins_label => 'docker-test',
             docker_image  => 'private-registry:5000/icinga/{os}-{dist}-{arch}',
           }
@@ -59,7 +59,7 @@ describe 'icinga_build::pipeline::deb' do
             .with_config(%r{<image>private-registry:5000/icinga/debian-jessie-\$arch</image>})
             .with_config(%r{<projectNameList>\s*<string>deb-debian-jessie-0source</string>\s*</projectNameList>}m)
             .with_config(%r{<upstreamProjects>deb-debian-jessie-0source</upstreamProjects>})
-            .with_config(%r{<hudson.matrix.TextAxis>\s*<name>arch</name>\s*<values>\s*<string>x86_64</string>\s*<string>i386</string>\s*</values>\s*</hudson.matrix.TextAxis>}m)
+            .with_config(%r{<hudson.matrix.TextAxis>\s*<name>arch</name>\s*<values>\s*<string>x86_64</string>\s*<string>x86</string>\s*</values>\s*</hudson.matrix.TextAxis>}m)
             .with_config(%r{<project>deb-debian-jessie-0source</project>}) # copy artifacts from
             .with_config(/project="icinga2"/)
             .with_config(/os="debian"/)

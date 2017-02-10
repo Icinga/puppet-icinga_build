@@ -10,7 +10,7 @@ describe 'icinga_build::pipeline' do
       let :pre_condition do
         "
           class { 'icinga_build::pipeline::defaults':
-            arch          => ['x86_64', 'i386'],
+            arch          => ['x86_64', 'x86'],
             jenkins_label => 'docker-test',
             docker_image  => 'private-registry:5000/icinga/{os}-{dist}-{arch}',
           }
@@ -60,14 +60,15 @@ describe 'icinga_build::pipeline' do
             .with_docker_image('private-registry:5000/icinga/{os}-{dist}-{arch}')
 
           # for coverage
-          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-source')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-0source')
         end
 
         it do
           should contain_icinga_build__pipeline__deb('icinga2-snapshot-debian-wheezy')
 
           # for coverage
-          should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-source')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-0source')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-1binary')
         end
       end
 
@@ -146,14 +147,16 @@ describe 'icinga_build::pipeline' do
             .with_docker_image('private-registry:5000/icinga/{os}-{dist}-{arch}')
 
           # for coverage
-          should contain_jenkins_job('icinga2/deb-ubuntu-xenial-source')
+          should contain_jenkins_job('icinga2/deb-ubuntu-xenial-0source')
+          should contain_jenkins_job('icinga2/deb-ubuntu-xenial-1binary')
         end
 
         it do
           should contain_icinga_build__pipeline__deb('icinga2-ubuntu-trusty')
 
           # for coverage
-          should contain_jenkins_job('icinga2/deb-ubuntu-trusty-source')
+          should contain_jenkins_job('icinga2/deb-ubuntu-trusty-0source')
+          should contain_jenkins_job('icinga2/deb-ubuntu-trusty-1binary')
         end
       end
     end
