@@ -10,6 +10,7 @@ describe 'icinga_build::pipeline' do
       let :pre_condition do
         "
           class { 'icinga_build::pipeline::defaults':
+            arch          => ['x86_64', 'i386'],
             jenkins_label => 'docker-test',
             docker_image  => 'private-registry:5000/icinga/{os}-{dist}-{arch}',
           }

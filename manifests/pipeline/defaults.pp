@@ -13,6 +13,7 @@
 # @param views_hash     Configuration categorized views for the pipeline folder
 #
 class icinga_build::pipeline::defaults(
+  $arch          = undef,
   $docker_image  = undef,
   $jenkins_label = undef,
   $views_hash    = undef,

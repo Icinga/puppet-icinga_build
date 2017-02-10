@@ -6,14 +6,14 @@ define icinga_build::pipeline::deb (
   $use           = undef,
   $os            = undef, # part of namevar
   $dist          = undef, # part of namevar
-  $arch          = ['x86_64', 'i386'],
+  $arch          = $icinga_build::pipeline::defaults::arch,
   $docker_image  = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label = $icinga_build::pipeline::defaults::jenkins_label,
 ) {
   validate_array($arch)
   validate_string($docker_image, $jenkins_label)
 
-  unless $docker_image and $jenkins_label {
+  unless $arch and $docker_image and $jenkins_label {
     fail('Please ensure to configure icinga_build::pipeline::defaults, or add the parameters directly')
   }
 
@@ -35,13 +35,21 @@ define icinga_build::pipeline::deb (
     $_use = $_dist
   }
 
-  $_docker_image_source = regsubst(regsubst(regsubst($docker_image, '{os}', $_os), '{dist}', $_dist), '{arch}', $arch[0])
+  $_docker_image = regsubst(regsubst($docker_image, '{os}', $_os), '{dist}', $_dist)
+  $_docker_image_source = regsubst($_docker_image, '{arch}', $arch[0])
+  $_docker_image_binary = regsubst($_docker_image, '{arch}', '$arch')
 
-  jenkins_job { "${pipeline}/deb-${_os}-${_dist}-source":
+  $_source_job = "deb-${_os}-${_dist}-0source"
+  $_binary_job = "deb-${_os}-${_dist}-1binary"
+
+  jenkins_job { "${pipeline}/${_source_job}":
     config => template('icinga_build/jobs/deb_source.xml.erb'),
   }
 
-  # TODO: binary
+  jenkins_job { "${pipeline}/${_binary_job}":
+    config => template('icinga_build/jobs/deb_binary_matrix.xml.erb'),
+  }
+
   # TODO: test
   # TODO: release
 }

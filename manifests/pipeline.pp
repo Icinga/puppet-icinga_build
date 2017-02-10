@@ -6,6 +6,7 @@ define icinga_build::pipeline (
   $description    = undef,
   $matrix_deb     = { },
   $matrix_rpm     = { },
+  $arch           = $icinga_build::pipeline::defaults::arch,
   $docker_image   = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
   $views_hash     = $icinga_build::pipeline::defaults::views_hash,
@@ -22,7 +23,7 @@ define icinga_build::pipeline (
     fail("Can not parse product/target from name: ${name}")
   }
 
-  unless $docker_image and $jenkins_label {
+  unless $arch and $docker_image and $jenkins_label {
     fail('Please ensure to configure icinga_build::pipeline::defaults, or add the parameters directly')
   }
 
@@ -44,6 +45,7 @@ define icinga_build::pipeline (
     pipeline       => $title,
     control_repo   => $control_repo,
     control_branch => $control_branch,
+    arch           => $arch,
     docker_image   => $docker_image,
     jenkins_label  => $jenkins_label,
     tag            => $title,
@@ -54,6 +56,7 @@ define icinga_build::pipeline (
     pipeline       => $title,
     control_repo   => $control_repo,
     control_branch => $control_branch,
+    arch           => $arch,
     docker_image   => $docker_image,
     jenkins_label  => $jenkins_label,
     tag            => $title,
