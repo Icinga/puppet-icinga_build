@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e
+
+# configuration
+project=<%= @product.dump %>
+os=<%= @_os.dump %>
+dist=<%= @_dist.dump %>
+
+# from job environment
+: ${arch:=x86_64}
+
+###
+# please do not edit below
+###
+
+: ${BUILD_VERSION:=1}
+: ${WORKDIR:=`pwd`}
+
+<%= scope.function_template(['icinga_build/scripts/rpm_functions.sh.erb']) %>
+
+WORKDIR=`pwd`
+
+# enabling ccache
+PATH=/usr/lib/ccache:"$PATH"
+export CCACHE_DIR="$WORKDIR/ccache"
+
+set -x
+
+source_rpm="$(ls rpmbuild/SRPMS/*.src.rpm)"
+
+if [ $(echo "${source_rpm}" | wc -l) -gt 1 ]; then
+  echo "More than one spec file found:" >&2
+  ls -al rpmbuild/SRPMS >&2
+  exit 1
+fi
+
+# TODO: Workaround for rpmdb corruption
+# https://github.com/hengeldev/docker-ci-containers/commit/5d305376df72ca595e11f412e3b3827c3859e113
+sudo rpm --rebuilddb
+
+sudo yum clean expire-cache
+
+# Installing dependencies
+sudo yum-builddep -y "${source_rpm}"
+
+# build the actual packages
+# TODO: multi-arch?
+rpmbuild --rebuild "${source_rpm}"
