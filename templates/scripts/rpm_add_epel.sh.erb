@@ -28,4 +28,11 @@ centos-5)
   ;;
 esac
 
-sudo yum update -y
+if [ "$arch" = "x86" ]; then
+  link_arch=i386
+else
+  link_arch=x86_64
+fi
+
+sudo setarch $link_arch yum clean all
+sudo setarch $link_arch yum update -y
