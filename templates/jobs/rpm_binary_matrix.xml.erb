@@ -13,7 +13,7 @@
     </jenkins.model.BuildDiscarderProperty>
     <hudson.plugins.copyartifact.CopyArtifactPermissionProperty plugin="copyartifact@1.38">
       <projectNameList>
-        <string><%= @_source_job.encode(xml: :text) %></string>
+        <string><%= @_test_job.encode(xml: :text) %></string>
       </projectNameList>
     </hudson.plugins.copyartifact.CopyArtifactPermissionProperty>
   </properties>

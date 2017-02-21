@@ -13,7 +13,7 @@
     </jenkins.model.BuildDiscarderProperty>
     <hudson.plugins.copyartifact.CopyArtifactPermissionProperty plugin="copyartifact@1.38">
       <projectNameList>
-        <string><%= @_test_job.encode(xml: :text) %></string>
+        <string><%= @_binary_job.encode(xml: :text) %></string>
       </projectNameList>
     </hudson.plugins.copyartifact.CopyArtifactPermissionProperty>
   </properties>
@@ -26,7 +26,7 @@
   <triggers>
     <jenkins.triggers.ReverseBuildTrigger>
       <spec/>
-      <upstreamProjects><%= @_source_job.encode(xml: :text) %></upstreamProjects>
+      <upstreamProjects><%= @_binary_job.encode(xml: :text) %></upstreamProjects>
       <threshold>
         <name>SUCCESS</name>
         <ordinal>0</ordinal>
@@ -48,15 +48,15 @@
   </axes>
   <builders>
     <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38">
-      <project><%= @_source_job.encode(xml: :text) %></project>
-      <filter>*.tar.*,*.dsc,*.version</filter>
+      <project><%= @_binary_job.encode(xml: :text) %>/arch=$arch</project>
+      <filter>*.deb</filter>
       <target/>
       <excludes/>
       <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
       <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
     </hudson.plugins.copyartifact.CopyArtifact>
     <hudson.tasks.Shell>
-      <command><%= scope.function_template(['icinga_build/scripts/deb_binary.sh.erb']).encode(xml: :text) %></command>
+      <command><%= scope.function_template(['icinga_build/scripts/deb_test.sh.erb']).encode(xml: :text) %></command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
@@ -72,7 +72,7 @@
   <buildWrappers>
     <com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper plugin="docker-custom-build-environment@1.6.5">
       <selector class="com.cloudbees.jenkins.plugins.okidocki.PullDockerImageSelector">
-        <image><%= @_docker_image_binary.encode(xml: :text) %></image>
+        <image><%= @_docker_image_test.encode(xml: :text) %></image>
       </selector>
       <dockerHost plugin="docker-commons@1.4.0"/>
       <dockerRegistryCredentials/>

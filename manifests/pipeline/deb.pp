@@ -38,9 +38,11 @@ define icinga_build::pipeline::deb (
   $_docker_image = regsubst(regsubst($docker_image, '{os}', $_os), '{dist}', $_dist)
   $_docker_image_source = regsubst($_docker_image, '{arch}', $arch[0])
   $_docker_image_binary = regsubst($_docker_image, '{arch}', '$arch')
+  $_docker_image_test = regsubst($_docker_image, '{arch}', '$arch')
 
   $_source_job = "deb-${_os}-${_dist}-0source"
   $_binary_job = "deb-${_os}-${_dist}-1binary"
+  $_test_job =  "deb-${_os}-${_dist}-2test"
 
   jenkins_job { "${pipeline}/${_source_job}":
     config => template('icinga_build/jobs/deb_source.xml.erb'),
@@ -50,6 +52,8 @@ define icinga_build::pipeline::deb (
     config => template('icinga_build/jobs/deb_binary_matrix.xml.erb'),
   }
 
-  # TODO: test
+  jenkins_job { "${pipeline}/${_test_job}":
+    config => template('icinga_build/jobs/deb_test_matrix.xml.erb'),
+  }
   # TODO: release
 }

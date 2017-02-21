@@ -11,6 +11,11 @@
         <artifactNumToKeep>-1</artifactNumToKeep>
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
+    <hudson.plugins.copyartifact.CopyArtifactPermissionProperty plugin="copyartifact@1.38">
+      <projectNameList>
+        <string><%= @_binary_job.encode(xml: :text) %></string>
+      </projectNameList>
+    </hudson.plugins.copyartifact.CopyArtifactPermissionProperty>
   </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@2.5.0">
     <configVersion>2</configVersion>
