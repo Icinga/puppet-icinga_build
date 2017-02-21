@@ -8,6 +8,7 @@ define icinga_build::pipeline::rpm (
   $arch          = $icinga_build::pipeline::defaults::arch,
   $docker_image  = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label = $icinga_build::pipeline::defaults::jenkins_label,
+  $use_epel      = false,
 ) {
   validate_array($arch)
   validate_string($docker_image, $jenkins_label)
@@ -34,6 +35,8 @@ define icinga_build::pipeline::rpm (
 
   $_source_job = "rpm-${_os}-${_dist}-0source"
   $_binary_job = "rpm-${_os}-${_dist}-1binary"
+
+  $_use_epel = $use_epel
 
   jenkins_job { "${pipeline}/${_source_job}":
     config => template('icinga_build/jobs/rpm_source.xml.erb'),

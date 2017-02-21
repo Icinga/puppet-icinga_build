@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -ex
+
+#These should be set already!
+: ${arch:=x86_64}
+: ${distro:=centos-6}
+
+case "$distro" in
+centos-5)
+  case "$arch" in
+    x86)
+      wget -O /root/epel-release-5-4.noarch.rpm http://mirror.de.leaseweb.net/epel/5/i386/epel-release-5-4.noarch.rpm
+      ;;
+    x86_64)
+      wget -O /root/epel-release-5-4.noarch.rpm http://mirror.de.leaseweb.net/epel/5/x86_64/epel-release-5-4.noarch.rpm
+      ;;
+  esac
+  sudo rpm -i /root/epel-release-5-4.noarch.rpm
+  ;;
+*)
+  for i in $(seq 1 5); do
+	  if sudo yum install -y epel-release; then
+		  break
+	  fi
+    sleep 5
+  done
+  ;;
+esac
+
+sudo yum update -y
