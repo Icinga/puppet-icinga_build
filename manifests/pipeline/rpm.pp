@@ -33,6 +33,7 @@ define icinga_build::pipeline::rpm (
   $_docker_image_source = regsubst($_docker_image, '{arch}', $arch[0])
   $_docker_image_binary = regsubst($_docker_image, '{arch}', '$arch')
   $_docker_image_test = regsubst($_docker_image, '{arch}', '$arch')
+  $_project_test = $product
 
   $_source_job = "rpm-${_os}-${_dist}-0source"
   $_binary_job = "rpm-${_os}-${_dist}-1binary"

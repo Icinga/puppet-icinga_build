@@ -1,7 +1,22 @@
 #!/bin/bash
 
-set -ex
+set -e
 
-mv rpmbuild/RPMS/noarch/*.rpm .
+sudo dpkg -i *.deb || true
+sudo apt-get update
+sudo apt-get install -f -y
 
-sudo yum --nogpg -y localinstall *.rpm
+while ! curl -s http://localhost/ -o /dev/null; do
+    apache2ctl start || echo "apache2ctl start failed"
+  sleep 5
+done
+
+RSTATUS=$(curl -s -w %{http_code} http://localhost/icingaweb2/authentication/login -o /dev/null)
+if [ "200" != "$RSTATUS" ]; then
+  echo "Http exit code was not ok!"
+  exit 1
+else
+  echo "All's well"
+  exit 0
+fi
+

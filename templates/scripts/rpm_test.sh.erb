@@ -2,17 +2,6 @@
 
 set -e
 
-yum --nopgpcheck localinstall *.rpm
+mv rpmbuild/RPMS/noarch/*.rpm .
 
-#REPOPATH=$(pwd)
-
-#createrepo $REPOPATH
-
-#cat > /etc/yum.repos.d/icinga-test.repo <<CC
-#[local]
-#name=Nyarlathotep did nothing wrong
-#baseurl=file:///$REPOPATH
-#enabled=1
-#gpgcheck=0
-#CC
-
+sudo yum --nogpg -y localinstall *.rpm

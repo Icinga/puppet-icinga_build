@@ -63,6 +63,11 @@
     <hudson.tasks.Shell>
       <command><%= scope.function_template(['icinga_build/scripts/rpm_test.sh.erb']).encode(xml: :text) %></command>
     </hudson.tasks.Shell>
+    <% if @_project_test -%>
+    <hudson.tasks.Shell>
+		<command><%= scope.function_template(["icinga_build/scripts/tests/#{@_project_test}-rpm.sh.erb"]).encode(xml: :text) %></command>
+    </hudson.tasks.Shell>
+    <% end %>
   </builders>
   <publishers>
     <hudson.tasks.ArtifactArchiver>
