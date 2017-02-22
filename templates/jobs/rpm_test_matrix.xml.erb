@@ -11,11 +11,6 @@
         <artifactNumToKeep>1</artifactNumToKeep>
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
-    <hudson.plugins.copyartifact.CopyArtifactPermissionProperty plugin="copyartifact@1.38">
-      <projectNameList>
-        <string><%= @_binary_job.encode(xml: :text) %></string>
-      </projectNameList>
-    </hudson.plugins.copyartifact.CopyArtifactPermissionProperty>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
   <assignedNode><%= @jenkins_label.encode(xml: :text) %></assignedNode>
@@ -61,13 +56,11 @@
     </hudson.tasks.Shell>
     <% end -%>
     <hudson.tasks.Shell>
-      <command><%= scope.function_template(['icinga_build/scripts/rpm_test.sh.erb']).encode(xml: :text) %></command>
+      <command>
+<%= scope.function_template(['icinga_build/scripts/rpm_test.sh.erb']).encode(xml: :text) %>
+<%= scope.function_template(["icinga_build/scripts/tests/rpm_#{@product}.sh.erb"]).encode(xml: :text) %>
+      </command>
     </hudson.tasks.Shell>
-    <% if @_project_test -%>
-    <hudson.tasks.Shell>
-		<command><%= scope.function_template(["icinga_build/scripts/tests/#{@_project_test}-rpm.sh.erb"]).encode(xml: :text) %></command>
-    </hudson.tasks.Shell>
-    <% end %>
   </builders>
   <publishers>
     <hudson.tasks.ArtifactArchiver>

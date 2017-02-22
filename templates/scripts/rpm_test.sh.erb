@@ -2,6 +2,8 @@
 
 set -e
 
+#Thi should work with any .rpm package
+
 mv rpmbuild/RPMS/noarch/*.rpm .
 
 sudo yum --nogpg -y localinstall *.rpm

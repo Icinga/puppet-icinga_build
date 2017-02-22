@@ -1,15 +1,15 @@
 define icinga_build::pipeline (
   $control_repo,
-  $product        = undef, # part of namevar
-  $target         = undef, # part of namevar
-  $control_branch = 'snapshot',
-  $description    = undef,
-  $matrix_deb     = { },
-  $matrix_rpm     = { },
-  $arch           = $icinga_build::pipeline::defaults::arch,
-  $docker_image   = $icinga_build::pipeline::defaults::docker_image,
-  $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
-  $views_hash     = $icinga_build::pipeline::defaults::views_hash,
+  $product               = undef, # part of namevar
+  $target                = undef, # part of namevar
+  $control_branch        = 'snapshot',
+  $description           = undef,
+  $matrix_deb            = { },
+  $matrix_rpm            = { },
+  $arch                  = $icinga_build::pipeline::defaults::arch,
+  $docker_image          = $icinga_build::pipeline::defaults::docker_image,
+  $jenkins_label         = $icinga_build::pipeline::defaults::jenkins_label,
+  $views_hash            = $icinga_build::pipeline::defaults::views_hash,
 ) {
   if $views_hash { validate_hash($views_hash) }
 
