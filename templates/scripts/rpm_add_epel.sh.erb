@@ -6,6 +6,9 @@ set -ex
 : ${arch:=x86_64}
 : ${distro:=centos-6}
 
+sudo yum clean all
+sudo yum install -y yum-plugin-ovl
+
 case "$distro" in
 centos-5)
   case "$arch" in
@@ -19,12 +22,9 @@ centos-5)
   sudo rpm -i /root/epel-release-5-4.noarch.rpm
   ;;
 *)
-  for i in $(seq 1 5); do
-	  if sudo yum install -y epel-release; then
-		  break
-	  fi
-    sleep 5
-  done
+  if sudo yum install -y epel-release; then
+    break
+  fi
   ;;
 esac
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-set -e
+set -ex
 
-sudo dpkg -i *.deb || true
-sudo apt-get update
-sudo apt-get install -f -y
+mv rpmbuild/RPMS/noarch/*.rpm .
+
+sudo yum --nogpg -y localinstall *.rpm

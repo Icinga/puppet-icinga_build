@@ -55,6 +55,11 @@
       <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
       <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
     </hudson.plugins.copyartifact.CopyArtifact>
+    <% if @_use_epel -%>
+    <hudson.tasks.Shell>
+      <command><%= scope.function_template(['icinga_build/scripts/rpm_add_epel.sh.erb']).encode(xml: :text) %></command>
+    </hudson.tasks.Shell>
+    <% end -%>
     <hudson.tasks.Shell>
       <command><%= scope.function_template(['icinga_build/scripts/rpm_test.sh.erb']).encode(xml: :text) %></command>
     </hudson.tasks.Shell>
