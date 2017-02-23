@@ -39,10 +39,10 @@ fi
 # https://github.com/hengeldev/docker-ci-containers/commit/5d305376df72ca595e11f412e3b3827c3859e113
 sudo rpm --rebuilddb
 
-sudo yum clean expire-cache
+sudo setarch $arch yum clean expire-cache
 
 # Installing dependencies
-sudo yum-builddep -y "${source_rpm}"
+sudo setarch $arch yum-builddep -y "${source_rpm}"
 
 # build the actual packages
 # TODO: multi-arch?
