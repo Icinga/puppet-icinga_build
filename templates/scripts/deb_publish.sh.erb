@@ -1,0 +1,76 @@
+#!/bin/bash
+
+set -xe
+
+aptly_api="192.168.33.3:8080"
+aptly_project=<%= @product.dump %>
+repo="icinga"
+reponame=<%= @control_branch.dump %>
+distro="<%= @_os %>-<%= @_dist %>"
+aptly_distro=$distro
+distro_name=$(echo $distro | cut -f1 -d-)
+distro_version=$(echo $distro | cut -f2 -d-)
+
+# from job environment
+: ${arch:=x86_64}
+
+deb_repo="$repo-$distro-$reponame"
+deb_distro="$repo-$distro_version-snapshots"
+
+case "$distro" in
+  raspbian-*)
+    common_arch='armhf'
+    ;;
+  *)
+    common_arch='x86_64'
+    ;;
+esac
+
+if [ "$arch" != "$common_arch" ]; then
+  artifacts="*.deb"
+else
+  artifacts="*.deb /var/tmp/buildd/*.dsc /var/tmp/buildd/*.tar.gz /var/tmp/buildd/*.tar.xz"
+fi
+
+for artifact in $(shopt -s nullglob; echo $artifacts); do
+  #File upload
+  echo "Processing artifcat: $artifact"
+  for i in $(seq 1 5); do
+    res=$( curl -w %{http_code} -X POST -s --output /dev/null -k \
+      -F file=@$artifact \
+      $aptly_api/api/files/$aptly_project-$aptly_distro-$arch-$reponame )
+      
+    if [ "$res" = "200" ] ;then
+      break
+    else
+      echo "Restart aptly"
+    fi
+    
+    sleep 5
+  done
+done
+
+# Add to repo
+res=$( curl -w %{http_code} -X POST -s --output /dev/null -k \
+       http://$aptly_api/api/repos/$deb_repo/file/$aptly_project-$aptly_distro-$arch-$reponame )
+
+if [ "$res" != "200" ] ; then
+  exit 1
+fi
+
+#Publish repo
+res=$( curl -w %{http_code} -X PUT -s --output /dev/null -k \
+       -H 'Content-Type: application/json' --data {} \
+       http://$aptly_api/api/publish/$distro_name/$deb_distro )
+
+#Wenn das Repo schon existiert updaten
+if [ "$res" != "200" ] ; then
+  res=$( curl -w %{http_code} -X POST -s --output /dev/null -k \
+         -H 'Content-Type: application/json' \
+         --data '{"SourceKind": "local", "Sources": [{"Name": "'"$deb_repo"'"}], "Architectures": ["i386","amd64","source"], "Distribution": "'"$deb_distro"'"}' \
+         http://$aptly_api/api/publish/$distro_name )
+fi
+
+if [ "$res" != "200" -a "$res" != "201" ] ; then
+  exit 1
+fi
