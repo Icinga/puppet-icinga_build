@@ -36,6 +36,7 @@
     </jenkins.triggers.ReverseBuildTrigger>
   </triggers>
   <concurrentBuild>false</concurrentBuild>
+  <customWorkspace>$arch</customWorkspace>
   <axes>
     <hudson.matrix.TextAxis>
       <name>arch</name>
@@ -56,9 +57,9 @@
       <command><%= scope.function_template(['icinga_build/scripts/rpm_cleanup.sh.erb']).encode(xml: :text) %></command>
     </hudson.tasks.Shell>
     <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38">
-      <project><%= @_source_job.encode(xml: :text) %></project>
+	  <project><%= @pipeline.encode(xml: :text) %>/<%= @_source_job.encode(xml: :text) %></project>
       <filter>*.tar.*,rpmbuild/SRPMS/*.src.rpm,*.version</filter>
-      <target/>
+	  <target/>
       <excludes/>
       <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
       <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>

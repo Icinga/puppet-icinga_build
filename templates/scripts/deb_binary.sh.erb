@@ -15,11 +15,10 @@ dist=<%= @_dist.dump %>
 ###
 
 EATMYDATA="eatmydata"
-WORKDIR=`pwd`
 
 # enabling ccache
 PATH=/usr/lib/ccache:"$PATH"
-export CCACHE_DIR="$WORKDIR/ccache"
+export CCACHE_DIR="$WORKSPACE/ccache"
 
 set -x
 
@@ -31,7 +30,8 @@ if [ -n "$EATMYDATA" ]; then
 fi
 
 rm -rf "$project"
-dpkg-source -x *.dsc "$project"
+dpkg-source -x "$WORKSPACE/<%= @pipeline -%>-$arch"/*.dsc "$project"
+ 
 
 cd "$project"
 

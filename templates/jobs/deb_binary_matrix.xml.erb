@@ -48,9 +48,9 @@
   </axes>
   <builders>
     <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38">
-      <project><%= @_source_job.encode(xml: :text) %></project>
+	<project><%= @pipeline.encode(xml: :text) %>/<%= @_source_job.encode(xml: :text) %></project>
       <filter>*.tar.*,*.dsc,*.version</filter>
-      <target/>
+	  <target>$WORKSPACE/<%= @pipeline.encode(xml: :text) %>-$arch</target>
       <excludes/>
       <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
       <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>

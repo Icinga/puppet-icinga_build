@@ -19,11 +19,9 @@ dist=<%= @_dist.dump %>
 
 <%= scope.function_template(['icinga_build/scripts/rpm_functions.sh.erb']) %>
 
-WORKDIR=`pwd`
-
 # enabling ccache
 PATH=/usr/lib/ccache:"$PATH"
-export CCACHE_DIR="$WORKDIR/ccache"
+export CCACHE_DIR="$WORKSPACE/ccache"
 
 set -x
 
