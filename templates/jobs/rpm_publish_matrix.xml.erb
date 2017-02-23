@@ -45,14 +45,14 @@
   <builders>
     <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38">
       <project><%= @_binary_job.encode(xml: :text) %>/arch=$arch</project>
-      <filter>*.deb,*.tar*,*.dsc</filter>
+      <filter>rpmbuild/RPMS/**/*.rpm</filter>
       <target></target>
       <excludes></excludes>
       <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
       <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
     </hudson.plugins.copyartifact.CopyArtifact>
     <hudson.tasks.Shell>
-      <command><%= scope.function_template(['icinga_build/scripts/deb_publish.sh.erb']).encode(xml: :text) %></command>
+      <command><%= scope.function_template(['icinga_build/scripts/rpm_publish.sh.erb']).encode(xml: :text) %></command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>

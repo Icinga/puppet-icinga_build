@@ -2,7 +2,8 @@
 
 set -xe
 
-aptly_api="192.168.33.3:8080"
+aptly_server=<%= @aptly_server.dump %>
+aptly_credentials="$WORKSPACE/aptly-credentials.txt"
 aptly_project=<%= @product.dump %>
 repo="icinga"
 reponame=<%= @control_branch.dump %>
@@ -37,8 +38,8 @@ for artifact in $(shopt -s nullglob; echo $artifacts); do
   echo "Processing artifcat: $artifact"
   for i in $(seq 1 5); do
     res=$( curl -w %{http_code} -X POST -s --output /dev/null -k \
-      -F file=@$artifact \
-      $aptly_api/api/files/$aptly_project-$aptly_distro-$arch-$reponame )
+      -K $aptly_credentials -F file=@$artifact \
+      $aptly_server/api/files/$aptly_project-$aptly_distro-$arch-$reponame )
       
     if [ "$res" = "200" ] ;then
       break
@@ -51,24 +52,24 @@ for artifact in $(shopt -s nullglob; echo $artifacts); do
 done
 
 # Add to repo
-res=$( curl -w %{http_code} -X POST -s --output /dev/null -k \
-       http://$aptly_api/api/repos/$deb_repo/file/$aptly_project-$aptly_distro-$arch-$reponame )
+res=$( curl -w %{http_code} -X POST -s --output /dev/null -k -K $aptly_credentials \
+       $aptly_server/api/repos/$deb_repo/file/$aptly_project-$aptly_distro-$arch-$reponame )
 
 if [ "$res" != "200" ] ; then
   exit 1
 fi
 
-#Publish repo
-res=$( curl -w %{http_code} -X PUT -s --output /dev/null -k \
+# Publish repo
+res=$( curl -w %{http_code} -X PUT -s --output /dev/null -k -K $aptly_credentials \
        -H 'Content-Type: application/json' --data {} \
-       http://$aptly_api/api/publish/$distro_name/$deb_distro )
+       $aptly_server/api/publish/$distro_name/$deb_distro )
 
-#Wenn das Repo schon existiert updaten
+# Update repo fi it already exists
 if [ "$res" != "200" ] ; then
-  res=$( curl -w %{http_code} -X POST -s --output /dev/null -k \
+  res=$( curl -w %{http_code} -X POST -s --output /dev/null -k -K $aptly_credentials \
          -H 'Content-Type: application/json' \
          --data '{"SourceKind": "local", "Sources": [{"Name": "'"$deb_repo"'"}], "Architectures": ["i386","amd64","source"], "Distribution": "'"$deb_distro"'"}' \
-         http://$aptly_api/api/publish/$distro_name )
+         $aptly_server/api/publish/$distro_name )
 fi
 
 if [ "$res" != "200" -a "$res" != "201" ] ; then

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -xe
+
+aptly_server=<%= @aptly_server.dump %>
+aptly_credentials="$WORKSPACE/aptly-credentials.txt"
+aptly_project=<%= @product.dump %>
+repo="icinga"
+reponame=<%= @control_branch.dump %>
+distro_version=<%= @_dist.dump %>
+
+# from job environment
+: ${arch:=x86_64}
+
+for dir in rpmbuild/RPMS/*; do
+  pushd $dir
+  for rpm in *.rpm; do
+    for i in $(seq 1 5); do
+      res=$( curl -w %{http_code} -s --output /dev/null -X POST -k \
+             -K $aptly_credentials -F file=@$rpm \
+             $aptly_server/api/files/$aptly_project-epel-$distro_version-$arch-$reponame )
+      if [ "$res" = "200" ] ;then
+        break
+      else
+        echo "Restart aptly"
+      fi
+      
+      sleep 5
+      done
+      
+      if [ "$res" != "200" ] ; then
+        exit 1
+      fi    
+  done
+  popd
+done
