@@ -33,10 +33,12 @@ define icinga_build::pipeline::rpm (
   $_docker_image_source = regsubst($_docker_image, '{arch}', $arch[0])
   $_docker_image_binary = regsubst($_docker_image, '{arch}', '$arch')
   $_docker_image_test = regsubst($_docker_image, '{arch}', '$arch')
+  $_docker_image_publish = regsubst($_docker_image, '{arch}', '$arch')
 
   $_source_job = "rpm-${_os}-${_dist}-0source"
   $_binary_job = "rpm-${_os}-${_dist}-1binary"
   $_test_job   = "rpm-${_os}-${_dist}-2test"
+  $_publish_job   = "rpm-${_os}-${_dist}-3publish"
 
   $_use_epel = $use_epel
 
@@ -52,5 +54,7 @@ define icinga_build::pipeline::rpm (
     config => template('icinga_build/jobs/rpm_test_matrix.xml.erb'),
   }
 
-  # TODO: release
+  jenkins_job { "${pipeline}/${_publish_job}":
+    config => template('icinga_build/jobs/rpm_publish_matrix.xml.erb'),
+  }
 }
