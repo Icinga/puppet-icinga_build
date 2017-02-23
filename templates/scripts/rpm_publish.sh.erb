@@ -2,7 +2,8 @@
 
 set -xe
 
-aptly_api="http://192.168.33.3:8080"
+aptly_server=<%= @aptly_server.dump %>
+aptly_credentials="$WORKSPACE/aptly-credentials.txt"
 aptly_project=<%= @product.dump %>
 repo="icinga"
 reponame=<%= @control_branch.dump %>
@@ -16,8 +17,8 @@ for dir in rpmbuild/RPMS/*; do
   for rpm in *.rpm; do
     for i in $(seq 1 5); do
       res=$( curl -w %{http_code} -s --output /dev/null -X POST -k \
-             -F file=@$rpm \
-             $aptly_api/api/files/$aptly_project-epel-$distro_version-$arch-$reponame )
+             -K $aptly_credentials -F file=@$rpm \
+             $aptly_server/api/files/$aptly_project-epel-$distro_version-$arch-$reponame )
       if [ "$res" = "200" ] ;then
         break
       else

@@ -8,12 +8,13 @@ define icinga_build::pipeline::rpm (
   $arch          = $icinga_build::pipeline::defaults::arch,
   $docker_image  = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label = $icinga_build::pipeline::defaults::jenkins_label,
+  $aptly_server  = $icinga_build::pipeline::defaults::aptly_server,
   $use_epel      = false,
 ) {
   validate_array($arch)
-  validate_string($docker_image, $jenkins_label)
+  validate_string($docker_image, $jenkins_label, $aptly_server)
 
-  unless $arch and $docker_image and $jenkins_label {
+  unless $arch and $docker_image and $jenkins_label and $aptly_server {
     fail('Please ensure to configure icinga_build::pipeline::defaults, or add the parameters directly')
   }
 
