@@ -74,6 +74,14 @@
     <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.2">
       <colorMapName>xterm</colorMapName>
     </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+    <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
+      <includes>aptly-credentials.txt</includes>
+      <excludes></excludes>
+      <flatten>false</flatten>
+      <includeAntExcludes>false</includeAntExcludes>
+      <hudsonHomeRelative>false</hudsonHomeRelative>
+      <relativeTo>home</relativeTo>
+    </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
   </buildWrappers>
   <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
     <runSequentially>false</runSequentially>
