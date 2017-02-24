@@ -3,18 +3,18 @@ define icinga_build::pipeline::deb (
   $product,
   $control_repo,
   $control_branch,
-  $use           = undef,
-  $os            = undef, # part of namevar
-  $dist          = undef, # part of namevar
-  $arch          = $icinga_build::pipeline::defaults::arch,
-  $docker_image  = $icinga_build::pipeline::defaults::docker_image,
-  $jenkins_label = $icinga_build::pipeline::defaults::jenkins_label,
-  $aptly_server  = $icinga_build::pipeline::defaults::aptly_server,
+  $aptly_server,
+  $use            = undef,
+  $os             = undef, # part of namevar
+  $dist           = undef, # part of namevar
+  $arch           = $icinga_build::pipeline::defaults::arch,
+  $docker_image   = $icinga_build::pipeline::defaults::docker_image,
+  $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
 ) {
   validate_array($arch)
-  validate_string($docker_image, $jenkins_label, $aptly_server)
+  validate_string($docker_image, $jenkins_label)
 
-  unless $arch and $docker_image and $jenkins_label and $aptly_server {
+  unless $arch and $docker_image and $jenkins_label {
     fail('Please ensure to configure icinga_build::pipeline::defaults, or add the parameters directly')
   }
 

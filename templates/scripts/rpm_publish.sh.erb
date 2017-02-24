@@ -3,7 +3,7 @@
 set -xe
 
 aptly_server=<%= @aptly_server.dump %>
-aptly_credentials="$WORKSPACE/aptly-credentials.txt"
+aptly_credentials="$WORKSPACE/aptly/<%= @pipeline %>-credentials"
 aptly_project=<%= @product.dump %>
 repo="icinga"
 reponame=<%= @control_branch.dump %>

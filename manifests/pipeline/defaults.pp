@@ -20,10 +20,4 @@ class icinga_build::pipeline::defaults(
   $aptly_server   = undef,
   $aptly_user     = undef,
   $aptly_password = undef,
-) {
-
-  file { '/var/lib/jenkins/aptly-credentials.txt':
-    content => "user ${aptly_user}:${aptly_password}",
-  }
-
-}
+) { }

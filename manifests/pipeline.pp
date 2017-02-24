@@ -10,6 +10,9 @@ define icinga_build::pipeline (
   $docker_image          = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label         = $icinga_build::pipeline::defaults::jenkins_label,
   $views_hash            = $icinga_build::pipeline::defaults::views_hash,
+  $aptly_server          = $icinga_build::pipeline::defaults::aptly_server,
+  $aptly_user            = $icinga_build::pipeline::defaults::aptly_user,
+  $aptly_password        = $icinga_build::pipeline::defaults::aptly_password,
 ) {
   if $views_hash { validate_hash($views_hash) }
 
@@ -23,12 +26,13 @@ define icinga_build::pipeline (
     fail("Can not parse product/target from name: ${name}")
   }
 
-  unless $arch and $docker_image and $jenkins_label {
+  unless $arch and $docker_image and $jenkins_label and $aptly_server and $aptly_user and $aptly_password {
     fail('Please ensure to configure icinga_build::pipeline::defaults, or add the parameters directly')
   }
 
   validate_re($_product, '^[\w_\.\-\d]+$')
   validate_re($_target, '^[\w_\.\-\d]+$')
+  validate_string($aptly_server, $aptly_user, $aptly_password)
 
   # define folder
   icinga_build::folder { $title:
@@ -50,6 +54,7 @@ define icinga_build::pipeline (
     docker_image   => $docker_image,
     jenkins_label  => $jenkins_label,
     tag            => $title,
+    aptly_server   => $aptly_server,
   })
   # TODO: implement rpm
   create_resources('icinga_build::pipeline::rpm', prefix($matrix_rpm, "${title}-"), {
@@ -61,7 +66,15 @@ define icinga_build::pipeline (
     docker_image   => $docker_image,
     jenkins_label  => $jenkins_label,
     tag            => $title,
+    aptly_server   => $aptly_server,
   })
+
+  # add aptly credentials
+  ensure_resource('file', '/var/lib/jenkins/aptly', { 'ensure'  => 'directory' })
+
+  file { "/var/lib/jenkins/aptly/$title-credentials":
+    content => "user ${aptly_user}:${aptly_password}"
+  }
 
   # TODO: this is a dep cycle
   #Icinga_build::Pipeline::Deb <| tag == $title |> -> Icinga_build::Pipeline[$title]
