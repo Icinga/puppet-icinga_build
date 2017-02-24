@@ -1,7 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<matrix-project plugin="matrix-project@1.7.1">
+<?xml version="1.0" encoding="UTF-8"?><matrix-project plugin="matrix-project@1.7.1">
   <actions/>
-  <description></description>
+  <description/>
   <keepDependencies>false</keepDependencies>
   <properties>
     <jenkins.model.BuildDiscarderProperty>
@@ -21,7 +20,7 @@
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
   <triggers>
     <jenkins.triggers.ReverseBuildTrigger>
-      <spec></spec>
+      <spec/>
       <upstreamProjects><%= @_test_job.encode(xml: :text) %></upstreamProjects>
       <threshold>
         <name>SUCCESS</name>
@@ -46,8 +45,8 @@
     <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38">
       <project><%= @_binary_job.encode(xml: :text) %>/arch=$arch</project>
       <filter>*.deb,*.tar*,*.dsc</filter>
-      <target></target>
-      <excludes></excludes>
+      <target/>
+      <excludes/>
       <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
       <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
     </hudson.plugins.copyartifact.CopyArtifact>
@@ -62,11 +61,11 @@
         <image><%= @_docker_image_test.encode(xml: :text) %></image>
       </selector>
       <dockerHost plugin="docker-commons@1.4.0"/>
-      <dockerRegistryCredentials></dockerRegistryCredentials>
+      <dockerRegistryCredentials/>
       <verbose>false</verbose>
       <volumes class="empty-list"/>
       <privileged>false</privileged>
-      <group></group>
+      <group/>
       <command>/bin/cat</command>
       <forcePull>false</forcePull>
       <net>bridge</net>
@@ -76,7 +75,7 @@
     </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
     <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
       <includes>aptly/*-credentials</includes>
-      <excludes></excludes>
+      <excludes/>
       <flatten>false</flatten>
       <includeAntExcludes>false</includeAntExcludes>
       <hudsonHomeRelative>false</hudsonHomeRelative>
