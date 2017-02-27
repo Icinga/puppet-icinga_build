@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><matrix-project plugin="matrix-project@1.4.1">
+  <actions/>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>false</canRoam>
+  <assignedNode><%= @jenkins_label.encode(xml: :text) %></assignedNode>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <axes>
+    <hudson.matrix.TextAxis>
+      <name>arch</name>
+      <values>
+        <%- @archs.each do |arch| -%>
+        <string><%= arch.encode(xml: :text) %></string>
+        <%- end -%>
+      </values>
+    </hudson.matrix.TextAxis>
+    <hudson.matrix.TextAxis>
+      <name>release</name>
+      <values>
+        <%- @releases.each do |release| -%>
+        <string><%= release.encode(xml: :text) %></string>
+        <%- end -%>
+      </values>
+    </hudson.matrix.TextAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+		<command><%= scope.function_template(["icinga_build/scripts/docker/#{@_os}.sh.erb"]).encode(xml: :text) %></command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper plugin="docker-custom-build-environment@1.6.5">
+      <selector class="com.cloudbees.jenkins.plugins.okidocki.PullDockerImageSelector">
+        <image><%= @base_image.encode(xml: :text) %></image>
+      </selector>
+      <dockerHost plugin="docker-commons@1.4.0"/>
+      <dockerRegistryCredentials/>
+      <verbose>false</verbose>
+      <volumes class="empty-list"/>
+      <privileged>false</privileged>
+      <group/>
+      <command>/bin/cat</command>
+      <forcePull>false</forcePull>
+      <net>bridge</net>
+    </com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>
