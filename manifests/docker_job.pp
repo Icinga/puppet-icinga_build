@@ -18,8 +18,7 @@ define icinga_build::docker_job (
     $_os = $name_split[0]
   }
 
-  jenkins_job { "docker/$title":
+  jenkins_job { "docker/${title}":
     config => template('icinga_build/jobs/docker_image.xml.erb'),
   }
-
 }

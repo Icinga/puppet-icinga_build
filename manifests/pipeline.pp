@@ -56,7 +56,6 @@ define icinga_build::pipeline (
     tag            => $title,
     aptly_server   => $aptly_server,
   })
-  # TODO: implement rpm
   create_resources('icinga_build::pipeline::rpm', prefix($matrix_rpm, "${title}-"), {
     product        => $_product,
     pipeline       => $title,
@@ -72,8 +71,8 @@ define icinga_build::pipeline (
   # add aptly credentials
   ensure_resource('file', '/var/lib/jenkins/aptly', { 'ensure'  => 'directory' })
 
-  file { "/var/lib/jenkins/aptly/$title-credentials":
-    content => "user ${aptly_user}:${aptly_password}"
+  file { "/var/lib/jenkins/aptly/${title}-credentials":
+    content => "user ${aptly_user}:${aptly_password}",
   }
 
   # TODO: this is a dep cycle
