@@ -5,6 +5,7 @@ fixtures:
   forge_modules:
     archive: "puppet/archive"
     apt:     "puppetlabs/apt"
+    concat:  "puppetlabs/concat"
     java:    "puppetlabs/java"
     stdlib:  "puppetlabs/stdlib"
     #jenkins: "rtyler/jenkins"
