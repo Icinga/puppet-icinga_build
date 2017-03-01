@@ -4,6 +4,8 @@ set -e
 
 #This should work for any .deb Package
 
+export DEBIAN_FRONTEND=noninteractive
+
 sudo dpkg -i *.deb || true
 sudo apt-get update
 sudo apt-get install -f -y
