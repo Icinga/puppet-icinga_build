@@ -7,19 +7,20 @@ describe 'icinga_build::pipeline::rpm' do
         facts
       end
 
+      let :pre_condition do
+        "class { 'icinga_build::pipeline::defaults':
+          arch           => ['x86_64', 'x86'],
+          jenkins_label  => 'docker-test',
+          docker_image   => 'private-registry:5000/icinga/{os}-{dist}-{arch}',
+          aptly_server   => 'http://localhost',
+          aptly_user     => 'admin',
+          aptly_password => 'admin',
+        }"
+      end
+
       context 'with a simple example' do
         let :title do
           'icinga2-snapshot-centos-7'
-        end
-
-        let :pre_condition do
-          "
-          class { 'icinga_build::pipeline::defaults':
-            arch          => ['x86_64', 'x86'],
-            jenkins_label => 'docker-test',
-            docker_image  => 'private-registry:5000/icinga/{os}-{dist}-{arch}',
-          }
-          "
         end
 
         let :params do
@@ -45,6 +46,7 @@ describe 'icinga_build::pipeline::rpm' do
             .with_config(%r{<assignedNode>docker-test</assignedNode>})
             .with_config(%r{<image>private-registry:5000/icinga/centos-7-x86_64</image>})
             .with_config(%r{<includedRegions>icinga2/\*</includedRegions>})
+            .with_config(%r{<projectNameList>\s*<string>rpm-centos-7-1binary</string>\s*</projectNameList>}m)
             .with_config(/project="icinga2"/)
             .with_config(/os="centos"/)
             .with_config(/dist="7"/)
@@ -56,15 +58,29 @@ describe 'icinga_build::pipeline::rpm' do
             .with_config(/matrix-project/)
             .with_config(%r{<assignedNode>docker-test</assignedNode>})
             .with_config(%r{<image>private-registry:5000/icinga/centos-7-\$arch</image>})
-            .with_config(%r{<projectNameList>\s*<string>rpm-centos-7-0source</string>\s*</projectNameList>}m)
+            .with_config(%r{<projectNameList>\s*<string>rpm-centos-7-2test</string>\s*</projectNameList>}m)
             .with_config(%r{<upstreamProjects>rpm-centos-7-0source</upstreamProjects>})
             .with_config(%r{<hudson.matrix.TextAxis>\s*<name>arch</name>\s*<values>\s*<string>x86_64</string>\s*<string>x86</string>\s*</values>\s*</hudson.matrix.TextAxis>}m)
-            .with_config(%r{<project>rpm-centos-7-0source</project>}) # copy artifacts from
+            .with_config(%r{<project>icinga2-snapshot/rpm-centos-7-0source</project>}) # copy artifacts from
             .with_config(/project="icinga2"/)
             .with_config(/os="centos"/)
             .with_config(/dist="7"/)
             .without_config(/^arch=/)
             .with_config(/rpmbuild --rebuild/)
+        end
+
+        it 'should have a test job' do
+          pending
+
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-2test')
+            .with_config(/SOMEUSEFULCONTENT/)
+        end
+
+        it 'should have a publish job' do
+          pending
+
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-3publish')
+            .with_config(/SOMEUSEFULCONTENT/)
         end
       end
     end

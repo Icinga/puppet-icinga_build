@@ -13,13 +13,14 @@ describe 'icinga_build::pipeline::deb' do
         end
 
         let :pre_condition do
-          "
-          class { 'icinga_build::pipeline::defaults':
-            arch          => ['x86_64', 'x86'],
-            jenkins_label => 'docker-test',
-            docker_image  => 'private-registry:5000/icinga/{os}-{dist}-{arch}',
-          }
-          "
+          "class { 'icinga_build::pipeline::defaults':
+            arch           => ['x86_64', 'x86'],
+            jenkins_label  => 'docker-test',
+            docker_image   => 'private-registry:5000/icinga/{os}-{dist}-{arch}',
+            aptly_server   => 'http://localhost',
+            aptly_user     => 'admin',
+            aptly_password => 'admin',
+          }"
         end
 
         let :params do
@@ -45,6 +46,7 @@ describe 'icinga_build::pipeline::deb' do
             .with_config(%r{<assignedNode>docker-test</assignedNode>})
             .with_config(%r{<image>private-registry:5000/icinga/debian-jessie-x86_64</image>})
             .with_config(%r{<includedRegions>icinga2/jessie/\*</includedRegions>})
+            .with_config(%r{<projectNameList>\s*<string>deb-debian-jessie-1binary</string>\s*</projectNameList>}m)
             .with_config(/project="icinga2"/)
             .with_config(/os="debian"/)
             .with_config(/dist="jessie"/)
@@ -57,15 +59,29 @@ describe 'icinga_build::pipeline::deb' do
             .with_config(/matrix-project/)
             .with_config(%r{<assignedNode>docker-test</assignedNode>})
             .with_config(%r{<image>private-registry:5000/icinga/debian-jessie-\$arch</image>})
-            .with_config(%r{<projectNameList>\s*<string>deb-debian-jessie-0source</string>\s*</projectNameList>}m)
+            .with_config(%r{<projectNameList>\s*<string>deb-debian-jessie-2test</string>\s*</projectNameList>}m)
             .with_config(%r{<upstreamProjects>deb-debian-jessie-0source</upstreamProjects>})
             .with_config(%r{<hudson.matrix.TextAxis>\s*<name>arch</name>\s*<values>\s*<string>x86_64</string>\s*<string>x86</string>\s*</values>\s*</hudson.matrix.TextAxis>}m)
-            .with_config(%r{<project>deb-debian-jessie-0source</project>}) # copy artifacts from
+            .with_config(%r{<project>icinga2-snapshot/deb-debian-jessie-0source</project>}) # copy artifacts from
             .with_config(/project="icinga2"/)
             .with_config(/os="debian"/)
             .with_config(/dist="jessie"/)
             .without_config(/^arch=/)
             .with_config(/dpkg-buildpackage/)
+        end
+
+        it 'should have a test job' do
+          pending
+
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-2test')
+            .with_config(/SOMEUSEFULCONTENT/)
+        end
+
+        it 'should have a publish job' do
+          pending
+
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-3publish')
+            .with_config(/SOMEUSEFULCONTENT/)
         end
       end
     end

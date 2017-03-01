@@ -3,13 +3,13 @@ define icinga_build::pipeline::deb (
   $product,
   $control_repo,
   $control_branch,
-  $aptly_server,
   $use            = undef,
   $os             = undef, # part of namevar
   $dist           = undef, # part of namevar
   $arch           = $icinga_build::pipeline::defaults::arch,
   $docker_image   = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
+  $aptly_server   = $icinga_build::pipeline::defaults::aptly_server,
 ) {
   validate_array($arch)
   validate_string($docker_image, $jenkins_label)

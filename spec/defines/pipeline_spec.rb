@@ -8,13 +8,14 @@ describe 'icinga_build::pipeline' do
       end
 
       let :pre_condition do
-        "
-          class { 'icinga_build::pipeline::defaults':
-            arch          => ['x86_64', 'x86'],
-            jenkins_label => 'docker-test',
-            docker_image  => 'private-registry:5000/icinga/{os}-{dist}-{arch}',
-          }
-          "
+        "class { 'icinga_build::pipeline::defaults':
+          arch           => ['x86_64', 'x86'],
+          jenkins_label  => 'docker-test',
+          docker_image   => 'private-registry:5000/icinga/{os}-{dist}-{arch}',
+          aptly_server   => 'http://localhost',
+          aptly_user     => 'admin',
+          aptly_password => 'admin',
+        }"
       end
 
       context 'with a simple example' do
@@ -66,6 +67,8 @@ describe 'icinga_build::pipeline' do
           # for coverage
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-0source')
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-1binary')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-2test')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-3publish')
         end
 
         it do
@@ -74,6 +77,8 @@ describe 'icinga_build::pipeline' do
           # for coverage
           should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-0source')
           should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-1binary')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-2test')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-3publish')
         end
 
         it do
@@ -87,7 +92,9 @@ describe 'icinga_build::pipeline' do
 
           # for coverage
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-0source')
-          # should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-1binary')
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-1binary')
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-2test')
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-3publish')
         end
 
         it do
@@ -95,7 +102,15 @@ describe 'icinga_build::pipeline' do
 
           # for coverage
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-0source')
-          # should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-1binary')
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-1binary')
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-2test')
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-3publish')
+        end
+
+        it do
+          should contain_file('/var/lib/jenkins/aptly').with_ensure('directory')
+          should contain_file('/var/lib/jenkins/aptly/icinga2-snapshot-credentials')
+            .with_content(/user admin:admin/)
         end
       end
 
@@ -176,6 +191,8 @@ describe 'icinga_build::pipeline' do
           # for coverage
           should contain_jenkins_job('icinga2/deb-ubuntu-xenial-0source')
           should contain_jenkins_job('icinga2/deb-ubuntu-xenial-1binary')
+          should contain_jenkins_job('icinga2/deb-ubuntu-xenial-2test')
+          should contain_jenkins_job('icinga2/deb-ubuntu-xenial-3publish')
         end
 
         it do
@@ -184,6 +201,14 @@ describe 'icinga_build::pipeline' do
           # for coverage
           should contain_jenkins_job('icinga2/deb-ubuntu-trusty-0source')
           should contain_jenkins_job('icinga2/deb-ubuntu-trusty-1binary')
+          should contain_jenkins_job('icinga2/deb-ubuntu-trusty-2test')
+          should contain_jenkins_job('icinga2/deb-ubuntu-trusty-3publish')
+        end
+
+        it do
+          should contain_file('/var/lib/jenkins/aptly').with_ensure('directory')
+          should contain_file('/var/lib/jenkins/aptly/icinga2-credentials')
+            .with_content(/user admin:admin/)
         end
       end
     end
