@@ -1,9 +1,7 @@
 #!/bin/bash
 
-set -e
+set -ex
 
-#Thi should work with any .rpm package
+project=<%= @product.dump %>
 
-mv rpmbuild/RPMS/noarch/*.rpm .
-
-sudo yum --nogpg -y localinstall *.rpm
+./packaging/$project/testing/start_test.sh
