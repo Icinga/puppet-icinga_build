@@ -45,4 +45,4 @@ sed -i \
 
 rpmbuild --nodeps -bs "SPECS/${project}.spec"
 
-rpmlint --info --verbose "SPECS/${project}.spec"
+rpmlint --info --verbose "SPECS/${project}.spec" || true
