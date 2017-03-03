@@ -20,9 +20,83 @@ To set up the Jenkins, and our build scripts, just use:
 include ::icinga_build
 ```
 
-TODO: fill me
+The module base takes care about:
+
+* Jenkins + CLI
+* Icinga specific scripts (legacy)
+* SSH private key of Jenkins
+
+With Hiera hashes the following resources can be created:
+
+* `icinga_build::folder` - Wrapper for Folder Jobs
+* `icinga_build::job` - Wrapper for `jenkins::job`
+* `icinga_build::pipeline`
+* `jenkins::plugin`
+* `jenkins::docker_job`
 
 ## Build jobs and configuration
+
+### Folder
+
+``` puppet
+icinga_build::folder { 'docker':
+  description => 'My fancy folder',
+}
+```
+
+### Job
+
+This extends the default `jenkins::job` with templates and custom parameters.
+
+``` puppet
+icinga_build::job { 'icinga2-test':
+  template => 'icinga_build/jobs/icinga2-test.sh.erb',
+  params   => {
+    test => true,
+  },
+  folder   => 'test',
+}
+```
+
+### Pipeline
+
+Is a specific define type to support our Package build pipelines.
+
+This takes care about:
+
+* Creates a folder for the pipeline
+* Deb jobs: source, binary, test and publish
+* RPM jobs in the same way
+
+Here is a brief example:
+
+``` puppet
+icinga_build::pipeline { 'icinga2-snapshot':
+  control_repo   => 'https://github.com/Icinga/icinga-packaging.git',
+  control_branch => 'snapshot',
+  matrix_deb     => {
+    'debian-jessie' => {},
+    'debian-wheezy' => {},
+    'ubuntu-xenial' => {
+      use => 'ubuntu',
+    },
+    'ubuntu-trusty' => {
+      use => 'ubuntu',
+    },
+  },
+  matrix_rpm => {
+    'centos-6' => {
+      use_epel => true,
+    },
+    'centos-7' => {
+      use_epel => true,
+      arch     => ['x86_64'],
+    },
+  },
+}
+```
+
+## Docker Job
 
 TODO
 
