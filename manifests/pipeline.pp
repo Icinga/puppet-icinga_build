@@ -3,6 +3,7 @@ define icinga_build::pipeline (
   $product               = undef, # part of namevar
   $target                = undef, # part of namevar
   $control_branch        = 'snapshot',
+  $release_type          = undef,
   $description           = undef,
   $matrix_deb            = { },
   $matrix_rpm            = { },
@@ -24,6 +25,12 @@ define icinga_build::pipeline (
     $_target = $2
   } else {
     fail("Can not parse product/target from name: ${name}")
+  }
+
+  if $release_type {
+    $_release_type = $release_type
+  } else {
+    $_release_type = $control_branch
   }
 
   unless $arch and $docker_image and $jenkins_label and $aptly_server and $aptly_user and $aptly_password {
@@ -50,6 +57,7 @@ define icinga_build::pipeline (
     pipeline       => $title,
     control_repo   => $control_repo,
     control_branch => $control_branch,
+    release_type   => $_release_type,
     arch           => $arch,
     docker_image   => $docker_image,
     jenkins_label  => $jenkins_label,
@@ -61,6 +69,7 @@ define icinga_build::pipeline (
     pipeline       => $title,
     control_repo   => $control_repo,
     control_branch => $control_branch,
+    release_type   => $_release_type,
     arch           => $arch,
     docker_image   => $docker_image,
     jenkins_label  => $jenkins_label,

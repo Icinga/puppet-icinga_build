@@ -3,6 +3,7 @@ define icinga_build::pipeline::rpm (
   $product,
   $control_repo,
   $control_branch,
+  $release_type,
   $os             = undef, # part of namevar
   $dist           = undef, # part of namevar
   $arch           = $icinga_build::pipeline::defaults::arch,

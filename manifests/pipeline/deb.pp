@@ -3,6 +3,7 @@ define icinga_build::pipeline::deb (
   $product,
   $control_repo,
   $control_branch,
+  $release_type,
   $use            = undef,
   $os             = undef, # part of namevar
   $dist           = undef, # part of namevar
@@ -44,8 +45,9 @@ define icinga_build::pipeline::deb (
 
   $_source_job = "deb-${_os}-${_dist}-0source"
   $_binary_job = "deb-${_os}-${_dist}-1binary"
-  $_test_job =  "deb-${_os}-${_dist}-2test"
-  $_publish_job =  "deb-${_os}-${_dist}-3publish"
+  $_test_job   = "deb-${_os}-${_dist}-2test"
+  $_publish_job = "deb-${_os}-${_dist}-3publish"
+
 
   jenkins_job { "${pipeline}/${_source_job}":
     config => template('icinga_build/jobs/deb_source.xml.erb'),
@@ -62,4 +64,5 @@ define icinga_build::pipeline::deb (
   jenkins_job { "${pipeline}/${_publish_job}":
     config => template('icinga_build/jobs/deb_publish_matrix.xml.erb'),
   }
+
 }
