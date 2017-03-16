@@ -4,44 +4,52 @@
 project=<%= @product.dump %>
 os=<%= @_os.dump %>
 dist=<%= @_dist.dump %>
+release_type=<%= @release_type.dump %>
 
 ###
 # please do not edit below
 ###
 
-set -e
+set -ex
 
 : ${BUILD_VERSION:=1}
 : ${WORKDIR:=`pwd`}
 
 <%= scope.function_template(['icinga_build/scripts/rpm_functions.sh.erb']) %>
 
-set -x
-
-cp -v packaging/${project}/* rpmbuild/SOURCES/
+#this must not fail TODO: Something better, dirty hack
+cp -v packaging/${project}/* rpmbuild/SOURCES/ || true
 mv -v rpmbuild/SOURCES/*.spec rpmbuild/SPECS/
 
 # TODO: remove debug
 export UPSTREAM_GIT_URL=git://github.com/Icinga/"$project".git
 
-# download snapshot
-packaging/${project}/get_snapshot
+# download archive
+if [ "$release_type" == "release" ] ; then
+	sudo yum update -y
+	sudo yum install -y rpmdevtools
+	spectool -g rpmbuild/SPECS/*.spec
+	mv *.tar.gz rpmbuild/SOURCES
+else
+	packaging/${project}/get_snapshot
 
-version=`cat ${project}.version | cut -f1`
-revision="0.`date +%Y.%m.%d`+$BUILD_VERSION"
-git_commit=`cat ${project}.version | cut -f2`
-tarball=`cat ${project}.version | cut -f3`
+	version=`cat ${project}.version | cut -f1`
+	revision="0.`date +%Y.%m.%d`+$BUILD_VERSION"
+	git_commit=`cat ${project}.version | cut -f2`
+	tarball=`cat ${project}.version | cut -f3`
 
-cp -vl "${tarball}" rpmbuild/SOURCES/
+	# Update spec file
+	sed -i \
+	  -e "0,/^Version: /{s/Version: .*/Version: ${version}/}" \
+	  -e "0,/^Release: /{s/Release: .*/Release: ${revision}%{?dist}/}" \
+	  -e "0,/^Source0\?: /{s/\(Source0\?\): .*/Source0: ${tarball}/}" \
+	   "SPECS/${project}.spec"
+
+	cp -vl "${tarball}" rpmbuild/SOURCES/
+fi
+
 
 cd rpmbuild/
-
-# Update spec file
-sed -i \
-  -e "0,/^Version: /{s/Version: .*/Version: ${version}/}" \
-  -e "0,/^Release: /{s/Release: .*/Release: ${revision}%{?dist}/}" \
-  -e "0,/^Source0\?: /{s/\(Source0\?\): .*/Source0: ${tarball}/}" \
-   "SPECS/${project}.spec"
 
 rpmbuild --nodeps -bs "SPECS/${project}.spec"
 
