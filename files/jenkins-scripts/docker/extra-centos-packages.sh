@@ -1,0 +1,9 @@
+boost-devel
+bison
+cmake
+openssl-devel
+mysql-devel
+wxGTK3-devel
+yajl-devel
+libedit-devel
+ccache

@@ -1,0 +1,10 @@
+libboost-all-dev
+flex
+bison
+cmake
+libssl-dev
+libmysqlclient-dev
+libpq-dev
+libyajl-dev
+libedit-dev
+ccache

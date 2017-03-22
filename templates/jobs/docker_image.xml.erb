@@ -30,7 +30,7 @@
   </axes>
   <builders>
     <hudson.tasks.Shell>
-		<command><%= scope.function_template(["icinga_build/scripts/docker/#{@_os}.sh.erb"]).encode(xml: :text) %></command>
+		<command><%= scope.function_template(["icinga_build/scripts/docker.sh.erb"]).encode(xml: :text) %></command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
@@ -42,13 +42,26 @@
       <dockerHost plugin="docker-commons@1.4.0"/>
       <dockerRegistryCredentials/>
       <verbose>false</verbose>
-      <volumes class="empty-list"/>
+      <volumes>
+        <com.cloudbees.jenkins.plugins.okidocki.Volume>
+          <hostPath>/var/run/docker.sock</hostPath>
+          <path>/var/run/docker.sock</path>
+        </com.cloudbees.jenkins.plugins.okidocki.Volume>
+      </volumes>
       <privileged>true</privileged>
       <group/>
       <command>/bin/cat</command>
       <forcePull>false</forcePull>
       <net>bridge</net>
     </com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper>
+    <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
+      <includes>jenkins-scripts/docker/*</includes>
+      <excludes/>
+      <flatten>false</flatten>
+      <includeAntExcludes>false</includeAntExcludes>
+      <hudsonHomeRelative>false</hudsonHomeRelative>
+      <relativeTo>home</relativeTo>
+    </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
   </buildWrappers>
   <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
     <runSequentially>false</runSequentially>
