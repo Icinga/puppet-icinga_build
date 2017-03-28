@@ -6,7 +6,7 @@ aptly_project=<%= @product.dump %>
 release_type=<%= @release_type.dump %>
 distro="<%= @_os %>-<%= @_dist %>"
 
-if [[ "$BRANCH" == "?*" ]] ; then
+if [[ "$BRANCH" =~ \w? ]] ; then
 #BRANCH is non empty -> dev pipeline
   branch_sed=$(echo "$BRANCH" | sed -e "s/\//-/g")
   reponame="$aptly_project-$distro-$arch-$release_type-$branch_sed"
