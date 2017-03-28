@@ -1,31 +1,33 @@
-#!/bin/bash
-
-set -xe
+#!/bin/bash -xe
 
 aptly_server=<%= @aptly_server.dump %>
 aptly_credentials="$WORKSPACE/aptly/<%= @pipeline %>-credentials"
 aptly_project=<%= @product.dump %>
-repo="icinga"
-reponame=<%= @control_branch.dump %>
+release_type=<%= @release_type.dump %>
 distro="<%= @_os %>-<%= @_dist %>"
-aptly_distro=$distro
-distro_name=$(echo $distro | cut -f1 -d-)
-distro_version=$(echo $distro | cut -f2 -d-)
 
-# from job environment
-: ${arch:=x86_64}
+if [[ "$BRANCH" == "?*" ]] ; then
+#BRANCH is non empty -> dev pipeline
+  branch_sed=$(echo "$BRANCH" | sed -e "s/\//-/g")
+  reponame="$aptly_project-$distro-$arch-$release_type-$branch_sed"
+else
+  if [ "$release_type" == "snapshot" ] ; then
+    #snapshot
+    postfix="-$release_type"
+    reponame="$aptly_project-$distro-$arch-$release_type"
+  else
+    #release
+    reponame="$aptly_project-$distro-$arch"
+  fi
+fi
 
-deb_repo="$repo-$distro-$reponame"
-deb_distro="$repo-$distro_version-snapshots"
+reponame=$aptly_project-$distro-$arch$postfix
 
-case "$distro" in
-  raspbian-*)
+if [[ "$distro" =~ "raspbian-*" ]] ; then
     common_arch='armhf'
-    ;;
-  *)
+else
     common_arch='x86_64'
-    ;;
-esac
+fi
 
 if [ "$arch" != "$common_arch" ]; then
   artifacts="*.deb"
@@ -38,40 +40,39 @@ for artifact in $(shopt -s nullglob; echo $artifacts); do
   echo "Processing artifcat: $artifact"
   for i in $(seq 1 5); do
     res=$( curl -w %{http_code} -X POST -s --output /dev/null -k \
-      -K $aptly_credentials -F file=@$artifact \
-      $aptly_server/api/files/$aptly_project-$aptly_distro-$arch-$reponame )
-      
+      -K "$aptly_credentials" -F file=@"$artifact" $aptly_server/api/files/$reponame )
     if [ "$res" = "200" ] ;then
       break
     else
       echo "Restart aptly"
+	  #TODO
+	  false
     fi
-    
     sleep 5
   done
 done
 
-# Add to repo
-res=$( curl -w %{http_code} -X POST -s --output /dev/null -k -K $aptly_credentials \
-       $aptly_server/api/repos/$deb_repo/file/$aptly_project-$aptly_distro-$arch-$reponame )
+#Try to create repo in case it does not exist
+res=$(curl -w '%{http_code}' -s --output /dev/null -k -K "$aptly_credentials" -X POST \
+	-H 'Content-Type: application/json' --data '{ "Name":"'"$reponame"'" }' $aptly_server/api/repos)
 
-if [ "$res" != "200" ] ; then
-  exit 1
+if [ "$res" != "201" -a "$res" != "400" ] ; then
+  false
 fi
 
-# Publish repo
-res=$( curl -w %{http_code} -X PUT -s --output /dev/null -k -K $aptly_credentials \
-       -H 'Content-Type: application/json' --data {} \
-       $aptly_server/api/publish/$distro_name/$deb_distro )
+#Add to repo
+res=$( curl -w %{http_code} -X POST -s --output /dev/null -k -K "$aptly_credentials" \
+       $aptly_server/api/repos/$reponame/file/$reponame )
 
 # Update repo fi it already exists
+# TODO: Is this required?
 if [ "$res" != "200" ] ; then
-  res=$( curl -w %{http_code} -X POST -s --output /dev/null -k -K $aptly_credentials \
+  res=$( curl -w %{http_code} -X POST -s --output /dev/null -k -K "$aptly_credentials" \
          -H 'Content-Type: application/json' \
-         --data '{"SourceKind": "local", "Sources": [{"Name": "'"$deb_repo"'"}], "Architectures": ["i386","amd64","source"], "Distribution": "'"$deb_distro"'"}' \
-         $aptly_server/api/publish/$distro_name )
+         --data '{"SourceKind": "local", "Sources": [{"Name": "'"$reponame"'"}], "Architectures": ["i386","amd64","source"], "Distribution": "'"$distro"'"}' \
+         $aptly_server/api/publish/$distro )
 fi
 
 if [ "$res" != "200" -a "$res" != "201" ] ; then
-  exit 1
+  false
 fi

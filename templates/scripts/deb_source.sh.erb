@@ -12,6 +12,7 @@ release_type=<%= @release_type.dump %>
 ###
 
 : ${BUILD_VERSION=1}
+: ${BRANCH="master"}
 
 # cleanup
 rm -f *.version
@@ -31,7 +32,7 @@ if [ "$release_type" == "release" ] ; then
 	sudo apt-get install -y libwww-perl
 	uscan --download-current-version $project
 else
-	packaging/${project}/get_snapshot
+	packaging/${project}/get_snapshot -b "$BRANCH"
 fi
 
 
@@ -57,7 +58,7 @@ cd $project
 export DEBFULLNAME="Icinga Build System"
 export DEBEMAIL="info@icinga.com"
 
-if [ "$release_type" == "snapshot" ] ; then
+if [ "$release_type" != "release" ] ; then
 	dch --force-bad-version --newversion="$package_version" --distribution="$target_dist" -- \
 		"Snapshot build for version ${version}" \
 		"based on GIT commit ${git_commit}" \
