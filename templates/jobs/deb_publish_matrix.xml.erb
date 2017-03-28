@@ -11,6 +11,17 @@
         <artifactNumToKeep>1</artifactNumToKeep>
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
+    <% if @release_type == "dev" -%>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>BRANCH</name>
+          <description/>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <% end -%>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
   <assignedNode><%= @jenkins_label.encode(xml: :text) %></assignedNode>
