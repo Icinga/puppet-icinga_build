@@ -28,6 +28,9 @@
       </values>
     </hudson.matrix.TextAxis>
   </axes>
+  <%- if defined? @combination_filter -%>
+	  <combinationFilter><%= @combination_filter.encode(xml: :text) %></combinationFilter>
+  <%- end -%>
   <builders>
     <hudson.tasks.Shell>
 		<command><%= scope.function_template(["icinga_build/scripts/docker.sh.erb"]).encode(xml: :text) %></command>

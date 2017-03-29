@@ -3,7 +3,7 @@ define icinga_build::docker_job (
   $releases = undef,
   $archs = undef,
   $base_image = undef,
-  $combination_filter = '',
+  $combination_filter = undef,
   $jenkins_label = '',
 ) {
 
