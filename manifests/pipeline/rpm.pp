@@ -59,4 +59,8 @@ define icinga_build::pipeline::rpm (
   jenkins_job { "${pipeline}/${_publish_job}":
     config => template('icinga_build/jobs/rpm_publish_matrix.xml.erb'),
   }
+
+  jenkins_job { "${pipeline}/deb-${_os}-${_dist}":
+    config =>  template('icinga_build/jobs/pipeline_multi_job.xml.erb'),
+  }
 }

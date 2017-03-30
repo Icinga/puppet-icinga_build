@@ -65,4 +65,8 @@ define icinga_build::pipeline::deb (
     config => template('icinga_build/jobs/deb_publish_matrix.xml.erb'),
   }
 
+  jenkins_job { "${pipeline}/deb-${_os}-${_dist}":
+    config =>  template('icinga_build/jobs/pipeline_multi_job.xml.erb'),
+  }
+
 }
