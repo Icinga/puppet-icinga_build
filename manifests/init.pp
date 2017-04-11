@@ -1,5 +1,6 @@
-class icinga_build(
-  $ssh_private_key = undef,
+class icinga_build (
+  $ssh_private_key = '',
+  $ssh_public_key  = '',
 ) {
   contain ::jenkins
   contain ::jenkins::cli_helper
@@ -15,7 +16,7 @@ class icinga_build(
   create_resources('jenkins::plugin',      hiera_hash('jenkins::plugin', {}))
   create_resources('icinga_build::docker_job',  hiera_hash('icinga_build::docker_job', {}))
 
-  if $ssh_private_key {
+  if $ssh_private_key or $ssh_public_key {
     file { 'jenkins ssh dir':
       ensure => directory,
       path   => '/var/lib/jenkins/.ssh',
@@ -24,13 +25,21 @@ class icinga_build(
       mode   => '0700',
     }
 
-    file { 'jenkins ssh key':
+    file { 'jenkins id_rsa':
       ensure  => file,
       path    => '/var/lib/jenkins/.ssh/id_rsa',
       owner   => 'jenkins',
       group   => 'jenkins',
       content => $ssh_private_key,
       mode    => '0600',
+    }
+    file { 'jenkins id_rsa.pub':
+      ensure  => file,
+      path    => '/var/lib/jenkins/.ssh/id_rsa.pub',
+      owner   => 'jenkins',
+      group   => 'jenkins',
+      content => $ssh_public_key,
+      mode    => '0644',
     }
   }
 }
