@@ -82,7 +82,7 @@
     </hudson.tasks.ArtifactArchiver>
   </publishers>
     <% if @release_type == "dev" -%>
-    <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.31">
+    <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.33">
       <configs>
         <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
           <configs>
@@ -91,6 +91,7 @@
 		  <projects><%= @_binary_job.encode(xml: :text) %></projects>
           <condition>SUCCESS</condition>
           <triggerWithNoParameters>false</triggerWithNoParameters>
+          <triggerFromChildProjects>false</triggerFromChildProjects>
         </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
       </configs>
     </hudson.plugins.parameterizedtrigger.BuildTrigger>

@@ -94,6 +94,7 @@
 		  <projects><%= @_binary_job.encode(xml: :text) %></projects>
           <condition>SUCCESS</condition>
           <triggerWithNoParameters>false</triggerWithNoParameters>
+          <triggerFromChildProjects>false</triggerFromChildProjects>
         </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
       </configs>
     </hudson.plugins.parameterizedtrigger.BuildTrigger>
