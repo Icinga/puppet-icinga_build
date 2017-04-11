@@ -1,0 +1,22 @@
+#!/bin/bash -xe
+
+os=<%= @_os.dump %>
+
+#Don't call me lazy
+case $os in
+  "debian"|"ubuntu")
+	  os_type="debian"
+	  ;;
+  "centos"|"fedora")
+	  os_type="centos"
+	  ;;
+  "sles"|"opensuse")
+	  os_type="suse"
+	  ;;
+  *)
+      echo "Unknown os \"$os\""
+	  false
+	  ;;
+esac
+
+sudo -E os="$os"  ./jenkins-scripts/docker/$os_type.sh
