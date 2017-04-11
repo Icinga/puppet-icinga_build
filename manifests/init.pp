@@ -42,4 +42,32 @@ class icinga_build (
       mode    => '0644',
     }
   }
+
+  if $ssh_public_key {
+    # configure Jenkins user to manage locally
+    file { 'jenkins users':
+      ensure => directory,
+      path   => '/var/lib/jenkins/users',
+      owner  => 'jenkins',
+      group  => 'jenkins',
+      mode   => '0640',
+    }
+    file { 'jenkins user puppet':
+      ensure => directory,
+      path   => '/var/lib/jenkins/users/puppet',
+      owner  => 'jenkins',
+      group  => 'jenkins',
+      mode   => '0640',
+    }
+
+    Package['jenkins'] ->
+    file { 'jenkins user puppet config.xml':
+      ensure  => file,
+      path    => '/var/lib/jenkins/users/puppet/config.xml',
+      owner   => 'jenkins',
+      group   => 'jenkins',
+      mode    => '0640',
+      content => template('icinga_build/puppet-user.xml'),
+    } ~> Service['jenkins']
+  }
 }
