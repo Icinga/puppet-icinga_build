@@ -1,5 +1,6 @@
 define icinga_build::pipeline (
   $control_repo,
+  $ensure                = 'present',
   $product               = undef, # part of namevar
   $target                = undef, # part of namevar
   $control_branch        = 'snapshot',
@@ -15,6 +16,8 @@ define icinga_build::pipeline (
   $aptly_user            = $icinga_build::pipeline::defaults::aptly_user,
   $aptly_password        = $icinga_build::pipeline::defaults::aptly_password,
 ) {
+  validate_re($ensure, '^(present|absent)$')
+
   if $views_hash { validate_hash($views_hash) }
 
   if $product and $target {
@@ -43,7 +46,7 @@ define icinga_build::pipeline (
 
   # define folder
   icinga_build::folder { $title:
-    ensure      => present,
+    ensure      => $ensure,
     description => "Icinga build pipeline for ${_product} with release target ${_target}\n\n${description}",
     views_xml   => template('icinga_build/views/pipeline.xml.erb'),
     icon        => 'aggregate-status',
@@ -53,6 +56,7 @@ define icinga_build::pipeline (
 
   # create matrizes
   create_resources('icinga_build::pipeline::deb', prefix($matrix_deb, "${title}-"), {
+    ensure         => $ensure,
     product        => $_product,
     pipeline       => $title,
     control_repo   => $control_repo,
@@ -65,6 +69,7 @@ define icinga_build::pipeline (
     aptly_server   => $aptly_server,
   })
   create_resources('icinga_build::pipeline::rpm', prefix($matrix_rpm, "${title}-"), {
+    ensure         => $ensure,
     product        => $_product,
     pipeline       => $title,
     control_repo   => $control_repo,
@@ -81,6 +86,7 @@ define icinga_build::pipeline (
   ensure_resource('file', '/var/lib/jenkins/aptly', { 'ensure'  => 'directory' })
 
   file { "/var/lib/jenkins/aptly/${title}-credentials":
+    ensure  => $ensure,
     content => "user ${aptly_user}:${aptly_password}",
   }
 

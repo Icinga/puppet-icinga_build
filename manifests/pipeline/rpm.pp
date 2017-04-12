@@ -4,6 +4,7 @@ define icinga_build::pipeline::rpm (
   $control_repo,
   $control_branch,
   $release_type,
+  $ensure         = 'present',
   $os             = undef, # part of namevar
   $dist           = undef, # part of namevar
   $arch           = $icinga_build::pipeline::defaults::arch,
@@ -12,6 +13,8 @@ define icinga_build::pipeline::rpm (
   $aptly_server   = $icinga_build::pipeline::defaults::aptly_server,
   $use_epel       = false,
 ) {
+  validate_re($ensure, '^(present|absent)$')
+
   validate_array($arch)
   validate_string($docker_image, $jenkins_label)
 
@@ -45,18 +48,22 @@ define icinga_build::pipeline::rpm (
   $_use_epel = $use_epel
 
   jenkins_job { "${pipeline}/${_source_job}":
+    ensure => $ensure,
     config => template('icinga_build/jobs/rpm_source.xml.erb'),
   }
 
   jenkins_job { "${pipeline}/${_binary_job}":
+    ensure => $ensure,
     config => template('icinga_build/jobs/rpm_binary_matrix.xml.erb'),
   }
 
   jenkins_job { "${pipeline}/${_test_job}":
+    ensure => $ensure,
     config => template('icinga_build/jobs/rpm_test_matrix.xml.erb'),
   }
 
   jenkins_job { "${pipeline}/${_publish_job}":
+    ensure => $ensure,
     config => template('icinga_build/jobs/rpm_publish_matrix.xml.erb'),
   }
 
