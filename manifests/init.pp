@@ -60,7 +60,6 @@ class icinga_build (
       mode   => '0640',
     }
 
-    Package['jenkins'] ->
     file { 'jenkins user puppet config.xml':
       ensure  => file,
       path    => '/var/lib/jenkins/users/puppet/config.xml',
@@ -68,6 +67,8 @@ class icinga_build (
       group   => 'jenkins',
       mode    => '0640',
       content => template('icinga_build/puppet-user.xml'),
-    } ~> Service['jenkins']
+      require => Package['jenkins'],
+      notify  => Service['jenkins'],
+    }
   }
 }
