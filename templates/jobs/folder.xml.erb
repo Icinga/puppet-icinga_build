@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!-- MANAGED BY PUPPET - Do not update manually! --><com.cloudbees.hudson.plugins.folder.Folder plugin="cloudbees-folder@5.16">
   <actions/>
-  <%- if @description -%>
+  <%- unless @description.empty? -%>
   <description><%= @description.encode(xml: :text) %></description>
   <%- else -%>
   <description/>
