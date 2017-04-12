@@ -66,6 +66,7 @@ define icinga_build::pipeline::deb (
   }
 
   jenkins_job { "${pipeline}/deb-${_os}-${_dist}":
+    ensure => absent,
     config =>  template('icinga_build/jobs/pipeline_multi_job.xml.erb'),
   }
 
