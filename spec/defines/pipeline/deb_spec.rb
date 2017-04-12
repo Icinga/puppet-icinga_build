@@ -28,7 +28,8 @@ describe 'icinga_build::pipeline::deb' do
             product:        'icinga2',
             pipeline:       'icinga2-snapshot',
             control_repo:   'https://github.com/Icinga/icinga-packaging.git',
-            control_branch: 'snapshot'
+            control_branch: 'snapshot',
+            release_type: 'snapshot'
           }
         end
 

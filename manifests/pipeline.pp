@@ -56,31 +56,34 @@ define icinga_build::pipeline (
 
   # create matrizes
   create_resources('icinga_build::pipeline::deb', prefix($matrix_deb, "${title}-"), {
-    ensure         => $ensure,
-    product        => $_product,
-    pipeline       => $title,
-    control_repo   => $control_repo,
-    control_branch => $control_branch,
-    release_type   => $_release_type,
-    arch           => $arch,
-    docker_image   => $docker_image,
-    jenkins_label  => $jenkins_label,
-    tag            => $title,
-    aptly_server   => $aptly_server,
-  })
+      ensure         => $ensure,
+      product        => $_product,
+      pipeline       => $title,
+      control_repo   => $control_repo,
+      control_branch => $control_branch,
+      release_type   => $_release_type,
+      arch           => $arch,
+      docker_image   => $docker_image,
+      jenkins_label  => $jenkins_label,
+      tag            => $title,
+      aptly_server   => $aptly_server,
+    }
+  )
+
   create_resources('icinga_build::pipeline::rpm', prefix($matrix_rpm, "${title}-"), {
-    ensure         => $ensure,
-    product        => $_product,
-    pipeline       => $title,
-    control_repo   => $control_repo,
-    control_branch => $control_branch,
-    release_type   => $_release_type,
-    arch           => $arch,
-    docker_image   => $docker_image,
-    jenkins_label  => $jenkins_label,
-    tag            => $title,
-    aptly_server   => $aptly_server,
-  })
+      ensure         => $ensure,
+      product        => $_product,
+      pipeline       => $title,
+      control_repo   => $control_repo,
+      control_branch => $control_branch,
+      release_type   => $_release_type,
+      arch           => $arch,
+      docker_image   => $docker_image,
+      jenkins_label  => $jenkins_label,
+      tag            => $title,
+      aptly_server   => $aptly_server,
+    }
+  )
 
   # add aptly credentials
   ensure_resource('file', '/var/lib/jenkins/aptly', { 'ensure'  => 'directory' })
