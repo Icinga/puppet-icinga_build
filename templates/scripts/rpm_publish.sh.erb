@@ -1,0 +1,49 @@
+#!/bin/bash -xe
+
+aptly_server=<%= @aptly_server.dump %>
+aptly_credentials="$WORKSPACE/aptly/<%= @pipeline %>-credentials"
+aptly_project=<%= @product.dump %>
+release_type=<%= @release_type.dump %>
+distro="<%= @_os %>-<%= @_dist %>"
+
+if [[ "$BRANCH" =~ \w? ]] ; then
+#BRANCH is non empty -> dev pipeline
+  branch_sed=$(echo "$BRANCH" | sed -e "s/\//-/g")
+  reponame="$aptly_project-$distro-$arch-$release_type-$branch_sed"
+else
+  if [ "$release_type" == "snapshot" ] ; then
+    #snapshot
+    postfix="-$release_type"
+    reponame="$aptly_project-$distro-$arch-$release_type"
+  else
+    #release
+    reponame="$aptly_project-$distro-$arch"
+  fi
+fi
+
+res=$(curl -w '%{http_code}' -s --output /dev/null -k -K "$aptly_credentials" -X POST \
+	-H 'Content-Type: application/json' --data '{ "Name":"'"$reponame"'" }' $aptly_server/api/repos)
+
+if [ "$res" != "201" -a "$res" != "400" ] ; then
+  false
+fi
+
+for dir in rpmbuild/RPMS/*; do
+  pushd $dir
+  for rpm in *.rpm; do
+    for i in $(seq 1 5); do
+      res=$( curl -w %{http_code} -s --output /dev/null -X POST -k -K "$aptly_credentials" -F file=@"$rpm" \
+             $aptly_server/api/files/$reponame )
+      if [ "$res" = "200" ] ;then
+        break
+      else
+        echo "Restart aptly"
+		#TODO
+		false
+      fi
+      
+      sleep 5
+      done
+  done
+  popd
+done

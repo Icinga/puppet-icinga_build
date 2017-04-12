@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -ex
+
+project=<%= @product.dump %>
+
+./packaging/$project/testing/start_test.sh

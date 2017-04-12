@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -ex
+
+rm -rf rpmbuild/
+
+# cleanup copied artifacts
+rm -f *.tar.* *.src.rpm *.spec *.version *.rpm
+
+# Create build directory structure
+mkdir rpmbuild/{,SPECS,SOURCES,BUILD,SRPMS}

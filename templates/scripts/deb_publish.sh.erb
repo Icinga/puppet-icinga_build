@@ -1,0 +1,78 @@
+#!/bin/bash -xe
+
+aptly_server=<%= @aptly_server.dump %>
+aptly_credentials="$WORKSPACE/aptly/<%= @pipeline %>-credentials"
+aptly_project=<%= @product.dump %>
+release_type=<%= @release_type.dump %>
+distro="<%= @_os %>-<%= @_dist %>"
+
+if [[ "$BRANCH" =~ \w? ]] ; then
+#BRANCH is non empty -> dev pipeline
+  branch_sed=$(echo "$BRANCH" | sed -e "s/\//-/g")
+  reponame="$aptly_project-$distro-$arch-$release_type-$branch_sed"
+else
+  if [ "$release_type" == "snapshot" ] ; then
+    #snapshot
+    postfix="-$release_type"
+    reponame="$aptly_project-$distro-$arch-$release_type"
+  else
+    #release
+    reponame="$aptly_project-$distro-$arch"
+  fi
+fi
+
+reponame=$aptly_project-$distro-$arch$postfix
+
+if [[ "$distro" =~ "raspbian-*" ]] ; then
+    common_arch='armhf'
+else
+    common_arch='x86_64'
+fi
+
+if [ "$arch" != "$common_arch" ]; then
+  artifacts="*.deb"
+else
+  artifacts="*.deb /var/tmp/buildd/*.dsc /var/tmp/buildd/*.tar.gz /var/tmp/buildd/*.tar.xz"
+fi
+
+for artifact in $(shopt -s nullglob; echo $artifacts); do
+  #File upload
+  echo "Processing artifcat: $artifact"
+  for i in $(seq 1 5); do
+    res=$( curl -w %{http_code} -X POST -s --output /dev/null -k \
+      -K "$aptly_credentials" -F file=@"$artifact" $aptly_server/api/files/$reponame )
+    if [ "$res" = "200" ] ;then
+      break
+    else
+      echo "Restart aptly"
+	  #TODO
+	  false
+    fi
+    sleep 5
+  done
+done
+
+#Try to create repo in case it does not exist
+res=$(curl -w '%{http_code}' -s --output /dev/null -k -K "$aptly_credentials" -X POST \
+	-H 'Content-Type: application/json' --data '{ "Name":"'"$reponame"'" }' $aptly_server/api/repos)
+
+if [ "$res" != "201" -a "$res" != "400" ] ; then
+  false
+fi
+
+#Add to repo
+res=$( curl -w %{http_code} -X POST -s --output /dev/null -k -K "$aptly_credentials" \
+       $aptly_server/api/repos/$reponame/file/$reponame )
+
+# Update repo fi it already exists
+# TODO: Is this required?
+if [ "$res" != "200" ] ; then
+  res=$( curl -w %{http_code} -X POST -s --output /dev/null -k -K "$aptly_credentials" \
+         -H 'Content-Type: application/json' \
+         --data '{"SourceKind": "local", "Sources": [{"Name": "'"$reponame"'"}], "Architectures": ["i386","amd64","source"], "Distribution": "'"$distro"'"}' \
+         $aptly_server/api/publish/$distro )
+fi
+
+if [ "$res" != "200" -a "$res" != "201" ] ; then
+  false
+fi

@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+# configuration
+project=<%= @product.dump %>
+os=<%= @_os.dump %>
+dist=<%= @_dist.dump %>
+use_dist=<%= @_use.dump %>
+release_type=<%= @release_type.dump %>
+
+###
+# please do not edit below
+###
+
+: ${BUILD_VERSION=1}
+: ${BRANCH="master"}
+
+# cleanup
+rm -f *.version
+rm -f *.tar* *.dsc *.deb *.changes
+rm -rf "$project"
+
+# creating project directory
+mkdir "$project"
+cp -r packaging/${project}/${use_dist}/debian "$project"/
+
+# TODO: remove debug
+export UPSTREAM_GIT_URL=git://github.com/Icinga/"$project".git
+
+# download archive
+if [ "$release_type" == "release" ] ; then
+	sudo apt-get update -y
+	sudo apt-get install -y libwww-perl
+	uscan --download-current-version $project
+else
+	packaging/${project}/get_snapshot -b "$BRANCH"
+fi
+
+
+#figure out version
+if [ "$release_type" == "release" ] ; then
+	#TODO: Better
+	tarball=$(ls $project_*.orig.tar.gz)
+	version=$(echo $tarball | sed "s/\($proj\)_\(.*\)\.orig\.tar\.gz$/\2/")
+else
+	version=`cat ${project}.version | cut -f1`
+	package_version="${version}-0.`date +%Y.%m.%d`+$BUILD_VERSION"
+	git_commit=`cat ${project}.version | cut -f2`
+	tarball=`cat ${project}.version | cut -f3`
+fi
+
+target_dist="icinga-${dist}-snapshots"
+
+# extracting source into package source tree
+tar xf "${tarball}" --strip 1 -C "$project"/
+
+# build source debian package
+cd $project
+export DEBFULLNAME="Icinga Build System"
+export DEBEMAIL="info@icinga.com"
+
+if [ "$release_type" != "release" ] ; then
+	dch --force-bad-version --newversion="$package_version" --distribution="$target_dist" -- \
+		"Snapshot build for version ${version}" \
+		"based on GIT commit ${git_commit}" \
+		"WARNING: this build is intended for testing and experimental usage and" \
+		"should not be used in a production environment!" < /dev/null
+fi
+
+dpkg-buildpackage -S -uc -us -nc -d

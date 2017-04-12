@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -ex
+
+#These should be set already!
+: ${arch:=x86_64}
+: ${distro:=centos-6}
+
+sudo yum clean all
+sudo yum install -y yum-plugin-ovl
+
+case "$distro" in
+centos-5)
+  case "$arch" in
+    x86)
+      wget -O /root/epel-release-5-4.noarch.rpm http://mirror.de.leaseweb.net/epel/5/i386/epel-release-5-4.noarch.rpm
+      ;;
+    x86_64)
+      wget -O /root/epel-release-5-4.noarch.rpm http://mirror.de.leaseweb.net/epel/5/x86_64/epel-release-5-4.noarch.rpm
+      ;;
+  esac
+  sudo rpm -i /root/epel-release-5-4.noarch.rpm
+  ;;
+*)
+  if sudo yum install -y epel-release; then
+    break
+  fi
+  ;;
+esac
+
+if [ "$arch" = "x86" ]; then
+  link_arch=i386
+else
+  link_arch=x86_64
+fi
+
+sudo setarch $link_arch yum clean all
+sudo setarch $link_arch yum update -y

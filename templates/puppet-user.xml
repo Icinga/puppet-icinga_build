@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<user>
+  <fullName>Puppet API</fullName>
+  <description>Please do not edit in Jenkins</description>
+  <properties>
+    <hudson.tasks.Mailer_-UserProperty plugin="mailer@1.17">
+      <emailAddress>puppet@localhost</emailAddress>
+    </hudson.tasks.Mailer_-UserProperty>
+    <hudson.security.HudsonPrivateSecurityRealm_-Details>
+      <passwordHash>#jbcrypt:EMPTYEMPTYEMPTY</passwordHash>
+    </hudson.security.HudsonPrivateSecurityRealm_-Details>
+    <org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl>
+      <authorizedKeys><%= @ssh_public_key.encode(:xml => :text) %></authorizedKeys>
+    </org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl>
+  </properties>
+</user>

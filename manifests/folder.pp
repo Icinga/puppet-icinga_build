@@ -1,9 +1,10 @@
 define icinga_build::folder (
   $ensure      = 'present',
   $description = '',
+  $views_xml   = undef,
+  $icon        = 'folder',
 ) {
-  # TODO: allow views via Hash
-  $_views_xml = ''
+  validate_re($icon, '^(folder|aggregate-status)$')
 
   jenkins_job { $title:
     ensure => $ensure,
