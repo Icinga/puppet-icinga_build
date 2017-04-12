@@ -119,6 +119,7 @@
   <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
     <runSequentially>false</runSequentially>
   </executionStrategy>
+  <publishers>
     <% if @release_type == "dev" -%>
     <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.31">
       <configs>
@@ -134,5 +135,5 @@
       </configs>
     </hudson.plugins.parameterizedtrigger.BuildTrigger>
     <% end -%>
-  <publishers/>
+  </publishers>
 </matrix-project>

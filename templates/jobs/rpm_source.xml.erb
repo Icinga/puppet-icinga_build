@@ -83,7 +83,6 @@
       <defaultExcludes>true</defaultExcludes>
       <caseSensitive>true</caseSensitive>
     </hudson.tasks.ArtifactArchiver>
-  </publishers>
     <% if @release_type == "dev" -%>
     <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.31">
       <configs>
@@ -99,6 +98,7 @@
       </configs>
     </hudson.plugins.parameterizedtrigger.BuildTrigger>
     <% end -%>
+  </publishers>
   <buildWrappers>
     <com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper plugin="docker-custom-build-environment@1.6.5">
       <selector class="com.cloudbees.jenkins.plugins.okidocki.PullDockerImageSelector">

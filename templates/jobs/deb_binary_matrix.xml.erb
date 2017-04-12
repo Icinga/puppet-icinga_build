@@ -79,7 +79,6 @@
       <defaultExcludes>true</defaultExcludes>
       <caseSensitive>true</caseSensitive>
     </hudson.tasks.ArtifactArchiver>
-  </publishers>
     <% if @release_type == "dev" -%>
     <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.31">
       <configs>
@@ -95,6 +94,7 @@
       </configs>
     </hudson.plugins.parameterizedtrigger.BuildTrigger>
     <% end -%>
+  </publishers>
   <buildWrappers>
     <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.32">
       <deleteDirs>false</deleteDirs>
