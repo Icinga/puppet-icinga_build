@@ -109,12 +109,10 @@ if [ "$os-$release" = "centos-5" ]; then
   setarch_pkg="setarch"
 fi
 
-
-
 success=0
 for i in $(seq 10); do
   setarch $link_arch chroot $destdir yum update -y
-  if setarch $link_arch chroot $destdir yum install -y sudo wget patch which rpm-build redhat-rpm-config yum-utils rpm-sign tar expect ccache gcc gcc-c++ patch rpmlint make util-linux git iproute curl $setarch_pkg `cat jenkins-scripts/docker/extra-centos-packages` ; then
+  if setarch $link_arch chroot $destdir yum install -y sudo wget patch which rpm-build redhat-rpm-config yum-utils rpm-sign tar expect ccache gcc gcc-c++ patch rpmlint make util-linux git iproute curl yum-plugin-ovl $setarch_pkg `cat jenkins-scripts/docker/extra-centos-packages` ; then
     success=1
     break;
   fi
