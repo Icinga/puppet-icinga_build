@@ -50,7 +50,7 @@ fedora)
 centos)
   case $release in
   5)
-	wget ftp://mirror.switch.ch/pool/4/mirror/centos/5.11/os/$link_arch/CentOS/centos-release-5-11.el5.centos.$link_arch.rpm
+	wget http://vault.centos.org/5.11/os/$link_arch/CentOS/centos-release-5-11.el5.centos.$link_arch.rpm
   ;;
   6)
     if [ "$link_arch" = "i386" ]; then
@@ -84,6 +84,13 @@ mkdir -p /etc/pki/
 ln -s $destdir/etc/pki/rpm-gpg/ /etc/pki/
 ln -s $destdir/etc/yum.repos.d/ /etc/
 
+if [ "$os-$release" = "centos-5" ] ; then
+  #Because centos 5 is kinda dead we need the Vault
+  sed -ie 's/#baseurl=.*$/baseurl=http:\/\/vault.centos.org\/5\.11\/os\/\$basearch/g' $destdir/etc/yum.repos.d/CentOS-Base.repo
+  sed -ie 's/mirrorlist.*//g' $destdir/etc/yum.repos.d/CentOS-Base.repo
+  setarch $link_arch yum --installroot $destdir clean metadata
+fi
+
 setarch $link_arch yum --installroot $destdir install -y yum db4-utils buildsys-macros 
 mv $destdir/var/lib/rpm/Packages $destdir/var/lib/rpm/Packages.old
 db_dump $destdir/var/lib/rpm/Packages.old | chroot $destdir db_load /var/lib/rpm/Packages
@@ -101,6 +108,8 @@ setarch_pkg=""
 if [ "$os-$release" = "centos-5" ]; then
   setarch_pkg="setarch"
 fi
+
+
 
 success=0
 for i in $(seq 10); do
