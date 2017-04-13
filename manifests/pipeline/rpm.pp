@@ -22,10 +22,12 @@ define icinga_build::pipeline::rpm (
     fail('Please ensure to configure icinga_build::pipeline::defaults, or add the parameters directly')
   }
 
+  $_name = regsubst($name, "^${pipeline}-", '')
+
   if $os and $dist {
     $_os = $os
     $_dist = $dist
-  } elsif $name =~ /-([\w\d\._]+)-([\w\d\._]+)$/ {
+  } elsif $_name =~ /^([\w\d\._]+)-([\w\d\._\-]+)$/ {
     $_os = $1
     $_dist = $2
   } else {
