@@ -10,8 +10,8 @@
 # @param jenkins_label  The slave label in Jenkins to bind the job to
 #
 class icinga_build::docker_job::defaults(
-  $jenkins_label   = undef,
-  $base_image      = undef,
-  $docker_registry = undef,
+  $jenkins_label   = '',
+  $base_image      = '',
+  $docker_registry = '',
   $publish         = false,
 ) { }
