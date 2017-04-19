@@ -5,7 +5,9 @@ define icinga_build::docker_job (
   $combination_filter = undef,
   $base_image         = $::icinga_build::docker_job::defaults::base_image,
   $jenkins_label      = $::icinga_build::docker_job::defaults::jenkins_label,
+  $parameters         = {},
 ) {
+  validate_hash($parameters)
 
   $name_split = split($title, '-')
   if size($name_split) != 2 {
