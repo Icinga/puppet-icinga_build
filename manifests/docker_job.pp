@@ -1,10 +1,10 @@
 define icinga_build::docker_job (
-  $os = undef, #from namevar
-  $releases = undef,
-  $archs = undef,
-  $base_image = undef,
+  $os                 = undef, #from namevar
+  $releases           = undef,
+  $archs              = undef,
   $combination_filter = undef,
-  $jenkins_label = '',
+  $base_image         = $::icinga_build::docker_job::defaults::base_image,
+  $jenkins_label      = $::icinga_build::docker_job::defaults::jenkins_label,
 ) {
 
   $name_split = split($title, '-')

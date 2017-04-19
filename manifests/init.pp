@@ -9,6 +9,7 @@ class icinga_build (
   contain ::icinga_build::scripts
 
   include ::icinga_build::pipeline::defaults
+  include ::icinga_build::docker_job::defaults
 
   create_resources('icinga_build::folder', hiera_hash('icinga_build::folder', {}))
   create_resources('icinga_build::job',    hiera_hash('icinga_build::job', {}))
