@@ -12,12 +12,13 @@ if [ -z ${image_name} ]; then
   echo "image_name not set!" >&2
   exit 1
 fi
-if [ -z ${DOCKER_REGISTRY} ]; then
-  echo "DOCKER_REGISTRY is not configured!" >&2
-  exit 1
-fi
 
 if [ ${PUBLISH} = true ]; then
+  if [ -z ${DOCKER_REGISTRY} ]; then
+    echo "DOCKER_REGISTRY is not configured!" >&2
+    exit 1
+  fi
+
   docker tag ${image_name} ${DOCKER_REGISTRY}/${image_name}
 
   pushed=0
