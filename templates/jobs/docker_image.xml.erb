@@ -10,10 +10,10 @@
         <artifactNumToKeep>-1</artifactNumToKeep>
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
-    <%- unless @parameters.empty? -%>
+    <%- unless @_parameters.empty? -%>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <%- @parameters.each do |n,v|
+        <%- @_parameters.each do |n,v|
           type = (v.is_a?(Hash) && v.key?('type')) ? v['type'] : 'String'
           raise Exception, "Invalid XML type for ParameterDefinition: #{type}" unless type =~ /^[a-z]+$/i
           type = "hudson.model.#{type}ParameterDefinition"
@@ -21,7 +21,7 @@
         <%= "<#{type}>" %>
           <name><%= n.encode(xml: :text) %></name>
           <description/>
-          <defaultValue><%= (v.is_a?(Hash) ? v['default'] : v).encode(xml: :text) %></defaultValue>
+          <defaultValue><%= (v.is_a?(Hash) ? v['default'] : v).to_s.encode(xml: :text) %></defaultValue>
         <%= "</#{type}>" %>
         <%- end -%>
       </parameterDefinitions>

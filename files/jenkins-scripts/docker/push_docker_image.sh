@@ -1,21 +1,40 @@
 #!/bin/bash
 
-#digest=$(curl -k -X GET https://net-docker-registry.adm.netways.de:5000/v2/$image_name/manifests/latest | grep blobSum | cut -d '"' -f4)
-#curl -k -X DELETE https://net-docker-registry.adm.netways.de:5000/v2/$image_name/manifests/$digest
+set -x
 
-docker tag $image_name net-docker-registry.adm.netways.de:5000/$image_name
-pushed=0
-for i in $(seq 1 $END); do
-  if docker push net-docker-registry.adm.netways.de:5000/$image_name; then
-	pushed=1
-    break
+: ${END:=5}
+: ${image_name:=}
+: ${PUSH_IMAGE:=0}
+: ${DOCKER_REGISTRY:=}
+: ${PUBLISH:=}
+
+if [ -z ${image_name} ]; then
+  echo "image_name not set!" >&2
+  exit 1
+fi
+if [ -z ${DOCKER_REGISTRY} ]; then
+  echo "DOCKER_REGISTRY is not configured!" >&2
+  exit 1
+fi
+
+if [ ${PUBLISH} = true ]; then
+  docker tag ${image_name} ${DOCKER_REGISTRY}/${image_name}
+
+  pushed=0
+  for i in $(seq 1 ${END}); do
+    if docker push ${DOCKER_REGISTRY}/${image_name}; then
+      pushed=1
+      break
+    fi
+    sleep 30
+  done
+  
+  docker rmi ${image_name}
+  docker rmi ${DOCKER_REGISTRY}/${image_name}
+  
+  if [ "$pushed" != "1" ]; then
+  	exit 1
   fi
-  sleep 30
-done
-
-docker rmi $image_name
-docker rmi net-docker-registry.adm.netways.de:5000/$image_name
-
-if [ "$pushed" != "1" ]; then
-	exit 1
+else
+  echo "Skipping publish, it is not enabled, see PUBLISH parameter!"
 fi
