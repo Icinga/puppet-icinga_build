@@ -16,6 +16,13 @@ define icinga_build::docker_job (
     fail('Name must be "$prefix-$os"')
   }
 
+  ensure_resource('icinga_build::folder', 'docker', {
+      ensure      => present,
+      description => 'Docker image build jobs',
+      icon        => 'aggregate-status',
+    }
+  )
+
   if $os {
     $_os = $os
   } else {
