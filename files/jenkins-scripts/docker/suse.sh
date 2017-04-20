@@ -139,8 +139,13 @@ run_zypper --non-interactive ${gpgcheck} install \
     patch rpmlint gawk db-utils git tar python-xml iproute2 ${certs}
 
 if [ "$os" = sles ]; then
-    # repair base product link
-    ln -s SLES.prod "$destdir"/etc/products.d/baseproduct
+  # repair base product link
+  if [[ "$release" == 11* ]]; then
+    product=SUSE_SLES
+  else
+    product=SLES
+  fi
+  ln -s ${product}.prod "$destdir"/etc/products.d/baseproduct
 fi
 
 if [[ "$release" == 11* ]]; then
@@ -160,6 +165,37 @@ fi
 
 echo 'nameserver 8.8.8.8' > "$destdir/etc/resolv.conf"
 
+# The following steps need a bit of help in the chroot
+mount -o bind /dev "$destdir/dev"
+mount -o bind /proc "$destdir/proc"
+mount -o bind /sys "$destdir/sys"
+
+# Activate image against SUSE repositories
+# These uses private credentials by the terms of a test license
+# See production hiera settings!
+if [ "$os" = sles ]; then
+  activation_file=
+  if [[ "$release" == 11* ]]; then
+    activation_file=jenkins-scripts/docker/sles-activation11.sh
+  elif [[ "$release" == 12* ]]; then
+    activation_file=jenkins-scripts/docker/sles-activation12.sh
+  fi
+
+  if [ -n ${activation_file} ] && [ -e ${activation_file} ]; then
+    cp ${activation_file} "$destdir"/tmp/activation.sh
+
+    echo "Running activation..."
+    chroot "$destdir" /tmp/activation.sh
+    rm -f "$destdir"/tmp/activation.sh
+
+    echo "Running update after activation..."
+    chroot "$destdir" zypper update -y
+  else
+    echo "WARNING: Activation file missing! ${activation_file}" >&2
+  fi
+fi
+
+# Add jenkins user
 chroot "$destdir" groupadd -g 1000 jenkins
 chroot "$destdir" useradd -u 1000 -g 1000 -m jenkins
 echo 'jenkins ALL=(ALL:ALL) NOPASSWD: ALL' | chroot "$destdir" tee -a /etc/sudoers
