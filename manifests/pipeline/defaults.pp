@@ -17,6 +17,7 @@ class icinga_build::pipeline::defaults(
   $docker_image   = undef,
   $jenkins_label  = undef,
   $views_hash     = undef,
+  $view_default   = undef,
   $aptly_server   = undef,
   $aptly_user     = undef,
   $aptly_password = undef,

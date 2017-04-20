@@ -19,6 +19,9 @@
 <%= @views_xml %>
       <%- end -%>
     </views>
+    <%- unless @view_default.nil? -%>
+    <primaryView><%= @view_default.encode(xml: :text) %></primaryView>
+    <%- end -%>
     <tabBar class="hudson.views.DefaultViewsTabBar"/>
   </folderViews>
   <healthMetrics>

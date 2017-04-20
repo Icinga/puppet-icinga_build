@@ -12,6 +12,7 @@ define icinga_build::pipeline (
   $docker_image          = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label         = $icinga_build::pipeline::defaults::jenkins_label,
   $views_hash            = $icinga_build::pipeline::defaults::views_hash,
+  $view_default          = $icinga_build::pipeline::defaults::view_default,
   $aptly_server          = $icinga_build::pipeline::defaults::aptly_server,
   $aptly_user            = $icinga_build::pipeline::defaults::aptly_user,
   $aptly_password        = $icinga_build::pipeline::defaults::aptly_password,
@@ -46,10 +47,11 @@ define icinga_build::pipeline (
 
   # define folder
   icinga_build::folder { $title:
-    ensure      => $ensure,
-    description => "Icinga build pipeline for ${_product} with release target ${_target}\n\n${description}",
-    views_xml   => template('icinga_build/views/pipeline.xml.erb'),
-    icon        => 'aggregate-status',
+    ensure       => $ensure,
+    description  => "Icinga build pipeline for ${_product} with release target ${_target}\n\n${description}",
+    views_xml    => template('icinga_build/views/pipeline.xml.erb'),
+    icon         => 'aggregate-status',
+    view_default => $view_default,
   }
 
   # TODO: what to do with target?

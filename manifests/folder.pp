@@ -1,8 +1,9 @@
 define icinga_build::folder (
-  $ensure      = 'present',
-  $description = '',
-  $views_xml   = undef,
-  $icon        = 'folder',
+  $ensure       = 'present',
+  $description  = '',
+  $view_default = undef,
+  $views_xml    = undef,
+  $icon         = 'folder',
 ) {
   validate_re($icon, '^(folder|aggregate-status)$')
 
