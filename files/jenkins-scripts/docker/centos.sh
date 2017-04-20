@@ -1,8 +1,22 @@
 #!/bin/bash -xe
 
-env
+: ${os:=}
+: ${release:=}
+: ${arch:=}
+: ${IMAGE_PREFIX:='netways/'}
 
-image_name=netways/$os-$release-$arch
+if [ -z "$os" ]; then
+  echo "env variable 'os' not set!" >&2
+  exit 1
+elif [ -z "$release" ]; then
+  echo "env variable 'release' not set!" >&2
+  exit 1
+elif [ -z "$arch" ]; then
+  echo "env variable 'arch' not set!" >&2
+  exit 1
+fi
+
+image_name="${IMAGE_PREFIX}${os}-${release}-${arch}"
 
 if [ "$arch" = "x86" ] ; then
   link_arch="i386"
@@ -28,9 +42,9 @@ mount -t tmpfs none $destdir
 mkdir $destdir/dev 
 mount -o bind /dev $destdir/dev
 
-cat >$HOME/.rpmmacros <<MACROS
-%_dbpath /var/lib/rpm
-MACROS
+#cat >$HOME/.rpmmacros <<MACROS
+#%_dbpath /var/lib/rpm
+#MACROS
 
 rpm --initdb --root $destdir
 
@@ -91,6 +105,7 @@ if [ "$os-$release" = "centos-5" ] ; then
   setarch $link_arch yum --installroot $destdir clean metadata
 fi
 
+# TODO: where do we need to do this??
 setarch $link_arch yum --installroot $destdir install -y yum db4-utils buildsys-macros 
 mv $destdir/var/lib/rpm/Packages $destdir/var/lib/rpm/Packages.old
 db_dump $destdir/var/lib/rpm/Packages.old | chroot $destdir db_load /var/lib/rpm/Packages
@@ -98,9 +113,6 @@ rm -f $destdir/var/lib/rpm/Packages.old
 chroot $destdir rpm --rebuilddb
 
 echo nameserver 8.8.8.8 > $destdir/etc/resolv.conf
-
-gcc --static -o $destdir/usr/bin/root_exec jenkins-scripts/docker/root_exec.c
-chroot $destdir chmod ug+s /usr/bin/root_exec
 
 source jenkins-scripts/docker/repo_epel_chroot.sh
 
@@ -110,9 +122,15 @@ if [ "$os-$release" = "centos-5" ]; then
 fi
 
 success=0
+# TODO: why retry??
 for i in $(seq 10); do
   setarch $link_arch chroot $destdir yum update -y
-  if setarch $link_arch chroot $destdir yum install -y sudo wget patch which rpm-build redhat-rpm-config yum-utils rpm-sign tar expect ccache gcc gcc-c++ patch rpmlint make util-linux git iproute curl yum-plugin-ovl $setarch_pkg `cat jenkins-scripts/docker/extra-centos-packages` ; then
+  # TODO: remove extra packages file?
+  if setarch $link_arch chroot $destdir yum install -y \
+    sudo wget patch which rpm-build redhat-rpm-config yum-utils rpm-sign tar \
+    expect ccache gcc gcc-c++ patch rpmlint make util-linux git iproute curl \
+    yum-plugin-ovl $setarch_pkg `cat jenkins-scripts/docker/extra-centos-packages`
+   then
     success=1
     break;
   fi
@@ -132,4 +150,5 @@ tar c -C $destdir --one-file-system . | docker import - $image_name
 
 umount -R $destdir
 
-source jenkins-scripts/docker/push_docker_image.sh
+export image_name
+./jenkins-scripts/docker/push_docker_image.sh
