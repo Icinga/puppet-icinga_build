@@ -4,7 +4,9 @@ fixtures:
 
   forge_modules:
     archive: "puppet/archive"
-    apt:     "puppetlabs/apt"
+    apt:
+      repo: "puppetlabs/apt"
+      ref: '2.4.0'
     concat:  "puppetlabs/concat"
     java:    "puppetlabs/java"
     stdlib:  "puppetlabs/stdlib"
