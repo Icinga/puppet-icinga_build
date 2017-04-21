@@ -85,11 +85,8 @@ icinga_build::pipeline { 'icinga2-snapshot':
     },
   },
   matrix_rpm => {
-    'centos-6' => {
-      use_epel => true,
-    },
+    'centos-6' => {},
     'centos-7' => {
-      use_epel => true,
       arch     => ['x86_64'],
     },
   },

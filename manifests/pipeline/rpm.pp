@@ -11,7 +11,8 @@ define icinga_build::pipeline::rpm (
   $docker_image   = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
   $aptly_server   = $icinga_build::pipeline::defaults::aptly_server,
-  $use_epel       = false,
+  # TODO: remove deprecated
+  $use_epel       = undef,
 ) {
   validate_re($ensure, '^(present|absent)$')
 
@@ -46,8 +47,6 @@ define icinga_build::pipeline::rpm (
   $_binary_job = "rpm-${_os}-${_dist}-1binary"
   $_test_job   = "rpm-${_os}-${_dist}-2test"
   $_publish_job   = "rpm-${_os}-${_dist}-3publish"
-
-  $_use_epel = $use_epel
 
   jenkins_job { "${pipeline}/${_source_job}":
     ensure => $ensure,
