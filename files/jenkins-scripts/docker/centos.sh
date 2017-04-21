@@ -114,7 +114,23 @@ chroot $destdir rpm --rebuilddb
 
 echo nameserver 8.8.8.8 > $destdir/etc/resolv.conf
 
-source jenkins-scripts/docker/repo_epel_chroot.sh
+# Update CA bundle
+if [ "$os-$release" = "centos-5" ] ; then
+  cp -v "$destdir"/etc/pki/tls/certs/ca-bundle.crt "$destdir"/root/ca-bundle.crt-old
+  # Note: Download is done in build container, so we can download it via HTTPS
+  wget https://curl.haxx.se/ca/cacert.pem -O "$destdir"/etc/pki/tls/certs/ca-bundle.crt
+fi
+
+# Install EPEL
+if [ "$os-$release" = "centos-5" ] ; then
+  wget -O "$destdir"/tmp/epel-release.rpm https://archives.fedoraproject.org/pub/archive/epel/epel-release-latest-"$release".noarch.rpm
+  chroot "$destdir" sh -ex <<EOF
+    rpm -Uvh /tmp/epel-release.rpm
+    rm -f /tmp/epel-release.rpm
+EOF
+else
+  chroot "$destdir" rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-"$release".noarch.rpm
+fi
 
 setarch_pkg=""
 if [ "$os-$release" = "centos-5" ]; then
