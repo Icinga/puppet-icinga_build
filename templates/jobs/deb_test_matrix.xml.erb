@@ -84,7 +84,7 @@
   </axes>
   <builders>
     <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38">
-      <project><%= @_binary_job.encode(xml: :text) %>/arch=$arch</project>
+      <project><%= @_binary_job.encode(xml: :text) %></project>
       <filter>*.deb</filter>
       <target>$WORKSPACE/archive</target>
       <excludes/>
