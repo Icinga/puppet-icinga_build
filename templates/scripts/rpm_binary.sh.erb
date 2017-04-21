@@ -35,12 +35,18 @@ fi
 
 # TODO: Workaround for rpmdb corruption
 # https://github.com/hengeldev/docker-ci-containers/commit/5d305376df72ca595e11f412e3b3827c3859e113
-sudo rpm --rebuilddb
-
-sudo setarch $arch yum clean expire-cache
+#sudo rpm --rebuilddb
 
 # Installing dependencies
-sudo setarch $arch yum-builddep -y "${source_rpm}"
+case "$os" in
+  opensuse|sles)
+    sudo setarch "$arch" zypper --non-interactive install `rpm -qpR "${source_rpm}"`
+    ;;
+  *)
+    sudo setarch "$arch" yum clean expire-cache
+    sudo setarch "$arch" yum-builddep -y "${source_rpm}"
+    ;;
+esac
 
 # build the actual packages
 # TODO: multi-arch?
