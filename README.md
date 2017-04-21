@@ -58,6 +58,17 @@ icinga_build::job { 'icinga2-test':
 }
 ```
 
+### Plugins
+
+Plugins for Jenkins can be installed via `jenkins::plugin` in hiera.
+
+Problem will be updates, since you might not only update a single plugin, add a dependency, and whatnot.
+
+There is a helper script `/var/lib/jenkins/plugins-yaml.sh`, which will print out a list of all installed plugins
+ and their respective version. The list is YAML, ready to be put in hiera.
+ 
+So plugins can be installed / updated via Jenkins WebUI, and the list in Puppet can be updated accordingly.
+
 ### Pipeline
 
 Is a specific define type to support our Package build pipelines.
