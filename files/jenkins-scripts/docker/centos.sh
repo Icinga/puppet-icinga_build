@@ -39,12 +39,14 @@ apt-get install -y yum rpm python-m2crypto wget python-lzma db-util gcc wget
 destdir=`mktemp -d`
 mount -t tmpfs none $destdir
 
-mkdir $destdir/dev 
+mkdir $destdir/dev
 mount -o bind /dev $destdir/dev
 
-#cat >$HOME/.rpmmacros <<MACROS
-#%_dbpath /var/lib/rpm
-#MACROS
+# So that Debian's RPM creates the files in the correct location...
+export HOME=/root
+cat >$HOME/.rpmmacros <<MACROS
+%_dbpath /var/lib/rpm
+MACROS
 
 rpm --initdb --root $destdir
 
@@ -106,7 +108,7 @@ if [ "$os-$release" = "centos-5" ] ; then
 fi
 
 # TODO: where do we need to do this??
-setarch $link_arch yum --installroot $destdir install -y yum db4-utils buildsys-macros 
+setarch $link_arch yum --installroot $destdir install -y yum db4-utils buildsys-macros
 mv $destdir/var/lib/rpm/Packages $destdir/var/lib/rpm/Packages.old
 db_dump $destdir/var/lib/rpm/Packages.old | chroot $destdir db_load /var/lib/rpm/Packages
 rm -f $destdir/var/lib/rpm/Packages.old
