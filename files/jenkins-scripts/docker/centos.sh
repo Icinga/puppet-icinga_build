@@ -187,7 +187,7 @@ echo 'jenkins ALL=(ALL:ALL) NOPASSWD: ALL' | chroot $destdir tee -a /etc/sudoers
 echo 'Defaults:jenkins !requiretty' | chroot $destdir tee -a /etc/sudoers
 
 # TODO: Remove this once the build deps for boost have been cleaned up...
-echo '%build_icinga_org 1' >/etc/rpm/macros.icinga_build
+echo '%build_icinga_org 1' >"$destdir"/etc/rpm/macros.icinga_build
 
 tar c -C $destdir --one-file-system . | docker import - $image_name
 
