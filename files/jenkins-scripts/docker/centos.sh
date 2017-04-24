@@ -141,6 +141,17 @@ if [ "$os-$release" = "centos-5" ] || [ "$os-$release" = "centos-6" ]; then
   devtools='devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils'
 fi
 
+# Add repoforge for newer devtools on CentOS 5
+if [ "$os-$release" = "centos-5" ]; then
+  cat >/etc/yum.repos.d/repoforge-buildtools.repo <<REPO
+[repoforge-buildtools]
+name=RepoForge buildtools
+baseurl=http://mirror.hs-esslingen.de/repoforge/redhat/el\$releasever/en/\$basearch/buildtools/
+enabled=1
+gpgcheck=0
+REPO
+fi
+
 setarch_pkg=""
 if [ "$os-$release" = "centos-5" ]; then
   setarch_pkg="setarch"
