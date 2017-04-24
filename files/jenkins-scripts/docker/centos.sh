@@ -134,6 +134,13 @@ else
   chroot "$destdir" rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-"$release".noarch.rpm
 fi
 
+# Add devtools-2 repository
+devtools='gcc gcc-c++'
+if [ "$os-$release" = "centos-5" ] || [ "$os-$release" = "centos-6" ]; then
+  wget -O "$destdir"/etc/yum.repos.d/devtools-2.repo https://people.centos.org/tru/devtools-2/devtools-2.repo
+  devtools='devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils'
+fi
+
 setarch_pkg=""
 if [ "$os-$release" = "centos-5" ]; then
   setarch_pkg="setarch"
@@ -146,7 +153,7 @@ for i in $(seq 10); do
   # TODO: remove extra packages file?
   if setarch $link_arch chroot $destdir yum install -y \
     sudo wget patch which rpm-build redhat-rpm-config yum-utils rpm-sign tar \
-    expect ccache gcc gcc-c++ patch rpmlint make util-linux git iproute curl \
+    expect ccache patch rpmlint make util-linux git iproute curl ${devtools} \
     yum-plugin-ovl $setarch_pkg `cat jenkins-scripts/docker/extra-centos-packages`
    then
     success=1
