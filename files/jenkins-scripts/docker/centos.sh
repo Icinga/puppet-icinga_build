@@ -152,6 +152,10 @@ gpgcheck=0
 REPO
 fi
 
+# Add Icinga's own repository, so we can ship build dependencies
+wget -O "$destdir"/etc/yum.repos.d/ICINGA-release.repo https://packages.icinga.com/epel/ICINGA-release.repo
+sed -i 's#http://#https://#' "$destdir"/etc/yum.repos.d/ICINGA-release.repo
+
 setarch_pkg=""
 if [ "$os-$release" = "centos-5" ]; then
   setarch_pkg="setarch"
