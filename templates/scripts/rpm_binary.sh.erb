@@ -77,4 +77,12 @@ else
 fi
 
 # build the actual packages
-rpmbuild --rebuild "${source_rpm}"
+eval "$(get_rpmbuild --rebuild "${source_rpm}")"
+
+if [ -e /opt/rh/devtoolset-2 ]; then
+  # Run in a newer compiler environment
+  # Environment needs to be set here for ccache to find the compiler to use...
+  scl enable devtoolset-2 -- "${RPMBUILD[@]}"
+else
+  "${RPMBUILD[@]}"
+fi

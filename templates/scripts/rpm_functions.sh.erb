@@ -1,6 +1,8 @@
 : ${WORKDIR:=`pwd`}
 
-rpmbuild() {
+get_rpmbuild() {
+    local RPMBUILD dist setarch
+
     dist=`rpm -E '%{?dist}' | sed 's/\(\.centos\)\?$/.icinga/'`
     if [ -n "$target_arch" ]; then
       setarch="setarch ${target_arch}"
@@ -11,7 +13,13 @@ rpmbuild() {
         --define "vendor Icinga.com" \
         --define "dist $dist" \
         --define "_topdir ${WORKDIR}/rpmbuild" \
-    "$@"
-        #--define "_rpmdir %{_topdir}/RPMS" \
-        #--define "_srcrpmdir %{_topdir}/SRPMS" \
+        "$@"
+    )
+    declare -p RPMBUILD
+}
+
+rpmbuild() {
+    local RPMBUILD
+    eval "$(get_rpmbuild "$@")"
+    "${RPMBUILD[@]}"
 }
