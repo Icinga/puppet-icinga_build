@@ -99,11 +99,6 @@
     <% end -%>
   </publishers>
   <buildWrappers>
-    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.32">
-      <deleteDirs>false</deleteDirs>
-      <cleanupParameter/>
-      <externalDelete/>
-    </hudson.plugins.ws__cleanup.PreBuildCleanup>
     <com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper plugin="docker-custom-build-environment@1.6.5">
       <selector class="com.cloudbees.jenkins.plugins.okidocki.PullDockerImageSelector">
         <image><%= @_docker_image_binary.encode(xml: :text) %></image>

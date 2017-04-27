@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 # configuration
 project=<%= @product.dump %>
@@ -26,10 +26,8 @@ fi
 <%= scope.function_template(['icinga_build/scripts/rpm_functions.sh.erb']) %>
 
 # enabling ccache
-PATH=/usr/lib/ccache:"$PATH"
+CCACHE_PATH=`rpm -E %_libdir`/ccache
 export CCACHE_DIR="$WORKSPACE/ccache"
-
-set -x
 
 source_rpm="$(ls rpmbuild/SRPMS/*.src.rpm)"
 
@@ -53,6 +51,19 @@ case "$os" in
     sudo setarch "$target_arch" yum-builddep -y "${source_rpm}"
     ;;
 esac
+
+if [ -e /opt/rh/devtoolset-2/enable ]; then
+  echo "Patching devtoolset-2 to use ccache..."
+  # This is the only good way to re-add ccache to top of PATH
+  # scl enable (inside icinga2.spec) will set its own path first
+  sudo sh -ex <<SUDOSCRIPT
+    echo 'PATH="${CCACHE_PATH}:\${PATH}" to /opt/rh/devtoolset-2/enable'
+    echo 'PATH="${CCACHE_PATH}:\${PATH}"' >> /opt/rh/devtoolset-2/enable
+SUDOSCRIPT
+else
+  # Enable ccache as a default wrapper for compilers
+  PATH="${CCACHE_PATH}:${PATH}"
+fi
 
 # build the actual packages
 rpmbuild --rebuild "${source_rpm}"
