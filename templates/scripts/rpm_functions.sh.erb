@@ -2,7 +2,12 @@
 
 rpmbuild() {
     dist=`rpm -E '%{?dist}' | sed 's/\(\.centos\)\?$/.icinga/'`
-    /usr/bin/rpmbuild \
+    if [ -n "$target_arch" ]; then
+      setarch="setarch ${target_arch}"
+    else
+      setarch=''
+    fi
+    ${setarch} /usr/bin/rpmbuild \
         --define "vendor Icinga.com" \
         --define "dist $dist" \
         --define "_topdir ${WORKDIR}/rpmbuild" \

@@ -17,6 +17,12 @@ dist=<%= @_dist.dump %>
 : ${BUILD_VERSION:=1}
 : ${WORKDIR:=`pwd`}
 
+if [ "$arch" = x86 ]; then
+  target_arch=i386
+else
+  target_arch="$arch"
+fi
+
 <%= scope.function_template(['icinga_build/scripts/rpm_functions.sh.erb']) %>
 
 # enabling ccache
@@ -40,14 +46,13 @@ fi
 # Installing dependencies
 case "$os" in
   opensuse|sles)
-    sudo setarch "$arch" zypper --non-interactive install `rpm -qpR "${source_rpm}"`
+    sudo setarch "$target_arch" zypper --non-interactive install `rpm -qpR "${source_rpm}"`
     ;;
   *)
-    sudo setarch "$arch" yum clean expire-cache
-    sudo setarch "$arch" yum-builddep -y "${source_rpm}"
+    sudo setarch "$target_arch" yum clean expire-cache
+    sudo setarch "$target_arch" yum-builddep -y "${source_rpm}"
     ;;
 esac
 
 # build the actual packages
-# TODO: multi-arch?
 rpmbuild --rebuild "${source_rpm}"

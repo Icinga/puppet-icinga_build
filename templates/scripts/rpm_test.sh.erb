@@ -6,12 +6,21 @@ project=<%= @product.dump %>
 os=<%= @_os.dump %>
 dist=<%= @_dist.dump %>
 
+# from job environment
+: ${arch:=x86_64}
+
 repo="$WORKSPACE"/archive/rpmbuild/RPMS
+
+if [ "$arch" = x86 ]; then
+  target_arch=i386
+else
+  target_arch="$arch"
+fi
 
 # Preparing local repository
 case "$os" in
   centos|fedora)
-    sudo yum install -y createrepo
+    sudo setarch "$target_arch" yum install -y createrepo
     createrepo "$repo"
 
     sudo -E su -c "cat << EOF > /etc/yum.repos.d/local.repo
@@ -24,7 +33,7 @@ EOF"
     ;;
   sles|opensuse)
     # Just use the local dir, zypper will take care of the rest!
-    sudo zypper addrepo --no-gpgcheck "$repo" local
+    sudo setarch "$target_arch" zypper addrepo --no-gpgcheck "$repo" local
     ;;
   *)
     echo "OS $os not supported in testing..." >&2
@@ -36,10 +45,10 @@ esac
 install_package() {
   case "$os" in
     centos|fedora)
-      sudo yum install -y "$@"
+      sudo setarch "$target_arch" yum install -y "$@"
       ;;
     sles|opensuse)
-      sudo zypper install -y "$@"
+      sudo setarch "$target_arch" zypper install -y "$@"
       ;;
     *)
       echo "OS $os not supported in testing - package install..." >&2
