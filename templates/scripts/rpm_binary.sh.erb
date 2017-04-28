@@ -79,6 +79,10 @@ fi
 # build the actual packages
 eval "$(get_rpmbuild --rebuild "${source_rpm}")"
 
+# explicitly unset arch, it may conflict with internal scripts
+# of the tools we build (happens with Icinga 2 and wxWidgets)
+unset arch
+
 if [ -e /opt/rh/devtoolset-2 ]; then
   # Run in a newer compiler environment
   # Environment needs to be set here for ccache to find the compiler to use...
