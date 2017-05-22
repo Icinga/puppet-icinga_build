@@ -195,6 +195,26 @@ if [ "$os" = sles ]; then
   fi
 fi
 
+# Add Icinga's own repository, so we can ship build dependencies
+repo_name=
+case "$os" in
+  sles)
+    repo_name=SUSE
+    ;;
+  # Not needed on OpenSUSE currently...
+  #opensuse)
+  #  repo_name=openSUSE
+  #  ;;
+  *)
+    echo "Can't add Icinga repo for os $os" >&2
+    ;;
+esac
+
+test -z ${repo_name} || chroot "$destdir" sh -ex <<ICINGAREPO
+  zypper addrepo https://packages.icinga.com/${repo_name}/ICINGA-release.repo
+  zypper --non-interactive --no-gpg-checks ref
+ICINGAREPO
+
 # Add jenkins user
 chroot "$destdir" groupadd -g 1000 jenkins
 chroot "$destdir" useradd -u 1000 -g 1000 -m jenkins
