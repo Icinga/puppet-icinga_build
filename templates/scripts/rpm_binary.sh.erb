@@ -25,21 +25,6 @@ fi
 
 <%= scope.function_template(['icinga_build/scripts/rpm_functions.sh.erb']) %>
 
-# enabling ccache
-export CCACHE_DIR="$WORKSPACE/ccache"
-
-# repair/prepare ccache (needed on some distros like CentOS 5 + 6, SUSE, OpenSUSE)
-CCACHE_LINKS=`setarch "$target_arch" rpm -E %_libdir`/ccache
-sudo sh -ex <<CCACHEREPAIR
-  test -d ${CCACHE_LINKS} || mkdir ${CCACHE_LINKS}
-  cd ${CCACHE_LINKS}
-  echo 'Preparing/Repairing ccache symlinks...'
-  for comp in cc cpp c++ gcc g++; do
-    [ ! -e \${comp} ] || continue
-    ln -svf /usr/bin/ccache \${comp}
-  done
-CCACHEREPAIR
-
 source_rpm="$(ls rpmbuild/SRPMS/*.src.rpm)"
 
 if [ $(echo "${source_rpm}" | wc -l) -gt 1 ]; then
@@ -48,13 +33,10 @@ if [ $(echo "${source_rpm}" | wc -l) -gt 1 ]; then
   exit 1
 fi
 
-# TODO: Workaround for rpmdb corruption
-# https://github.com/hengeldev/docker-ci-containers/commit/5d305376df72ca595e11f412e3b3827c3859e113
-#sudo rpm --rebuilddb
-
 # Installing dependencies
 case "$os" in
   opensuse|sles)
+    sudo setarch "$target_arch" zypper --non-interactive --no-gpg-checks ref
     sudo setarch "$target_arch" zypper --non-interactive install `rpm -qpR "${source_rpm}"`
     ;;
   *)
@@ -62,6 +44,42 @@ case "$os" in
     sudo setarch "$target_arch" yum-builddep -y "${source_rpm}"
     ;;
 esac
+
+###
+# CCACHE START
+###
+export CCACHE_DIR="$WORKSPACE/ccache"
+
+# repair/prepare ccache (needed on some distros like CentOS 5 + 6, SUSE, OpenSUSE)
+find_compilers() {
+  local location=${1:-/usr/bin}
+  cd "$location"
+  ls {cc,cpp,[gc]++,gcc}{,-*} 2>/dev/null || true
+}
+
+CCACHE_LINKS=`setarch "$target_arch" rpm -E %_libdir`/ccache
+compilers=($(find_compilers))
+if [ -e /opt/rh/devtoolset-2/enable ]; then
+  compilers+=($(find_compilers /opt/rh/devtoolset-2/root/usr/bin))
+fi
+
+sudo sh -ex <<CCACHEREPAIR
+  test -d ${CCACHE_LINKS} || mkdir ${CCACHE_LINKS}
+  cd ${CCACHE_LINKS}
+  echo 'Preparing/Repairing ccache symlinks...'
+  for comp in ${compilers[@]}; do
+    [ ! -e \${comp} ] || continue
+    ln -svf /usr/bin/ccache \${comp}
+  done
+CCACHEREPAIR
+
+# reset ccache statistics
+# so we now the statistics of the new build
+ccache -z # (--zero-stats)
+
+###
+# CCACHE END
+###
 
 if [ -e /opt/rh/devtoolset-2/enable ]; then
   echo "Patching devtoolset-2 to use ccache..."
@@ -90,3 +108,6 @@ if [ -e /opt/rh/devtoolset-2 ]; then
 else
   "${RPMBUILD[@]}"
 fi
+
+# save ccache statistics
+ccache -s | tee ccache.stats # (--show-stats)
