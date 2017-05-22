@@ -11,17 +11,32 @@
         <artifactNumToKeep>1</artifactNumToKeep>
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
-     <% if @release_type == "dev" -%>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
+        <% if @release_type == "dev" -%>
         <hudson.model.StringParameterDefinition>
           <name>BRANCH</name>
           <description/>
           <defaultValue>master</defaultValue>
         </hudson.model.StringParameterDefinition>
+        <% end -%>
+        <hudson.model.StringParameterDefinition>
+          <name>aptly_server</name>
+          <description/>
+          <defaultValue><%= @aptly_server.encode(xml: :text) %></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>aptly_user</name>
+          <description/>
+          <defaultValue><%= @aptly_user.encode(xml: :text) %></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>aptly_password</name>
+          <description/>
+          <defaultValue><%= @aptly_password.encode(xml: :text) %></defaultValue>
+        </hudson.model.PasswordParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
-    <% end -%>
   </properties>
   <scm class="hudson.scm.NullSCM"/>
   <assignedNode><%= @jenkins_label.encode(xml: :text) %></assignedNode>
@@ -67,6 +82,7 @@
   </builders>
   <publishers/>
   <buildWrappers>
+    <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper/>
     <com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper plugin="docker-custom-build-environment@1.6.5">
       <selector class="com.cloudbees.jenkins.plugins.okidocki.PullDockerImageSelector">
         <image><%= @_docker_image_test.encode(xml: :text) %></image>
@@ -84,14 +100,6 @@
     <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.4.2">
       <colorMapName>xterm</colorMapName>
     </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
-    <com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper plugin="copy-to-slave@1.4.4">
-      <includes>aptly/*-credentials</includes>
-      <excludes/>
-      <flatten>false</flatten>
-      <includeAntExcludes>false</includeAntExcludes>
-      <hudsonHomeRelative>false</hudsonHomeRelative>
-      <relativeTo>home</relativeTo>
-    </com.michelin.cio.hudson.plugins.copytoslave.CopyToSlaveBuildWrapper>
   </buildWrappers>
   <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
     <runSequentially>false</runSequentially>

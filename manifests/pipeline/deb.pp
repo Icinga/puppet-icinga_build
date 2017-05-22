@@ -12,6 +12,8 @@ define icinga_build::pipeline::deb (
   $docker_image   = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
   $aptly_server   = $icinga_build::pipeline::defaults::aptly_server,
+  $aptly_user     = $icinga_build::pipeline::defaults::aptly_user,
+  $aptly_password = $icinga_build::pipeline::defaults::aptly_password,
 ) {
   validate_re($ensure, '^(present|absent)$')
 
@@ -78,5 +80,4 @@ define icinga_build::pipeline::deb (
     ensure => absent,
     config =>  template('icinga_build/jobs/pipeline_multi_job.xml.erb'),
   }
-
 }

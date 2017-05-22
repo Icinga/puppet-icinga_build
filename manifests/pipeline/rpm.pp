@@ -11,6 +11,8 @@ define icinga_build::pipeline::rpm (
   $docker_image   = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
   $aptly_server   = $icinga_build::pipeline::defaults::aptly_server,
+  $aptly_user     = $icinga_build::pipeline::defaults::aptly_user,
+  $aptly_password = $icinga_build::pipeline::defaults::aptly_password,
   # TODO: remove deprecated
   $use_epel       = undef,
 ) {
