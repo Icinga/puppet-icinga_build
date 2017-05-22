@@ -20,6 +20,12 @@ EATMYDATA="eatmydata"
 PATH=/usr/lib/ccache:"$PATH"
 export CCACHE_DIR="$WORKSPACE/ccache"
 
+if [ "$arch" = x86 ]; then
+  target_arch=i386
+else
+  target_arch="$arch"
+fi
+
 set -x
 
 sudo apt-get update
@@ -38,7 +44,7 @@ cd "$project"
 # Installing dependencies
 # TODO: move to image
 sudo $EATMYDATA apt-get install --no-install-recommends -y pbuilder aptitude
-sudo $EATMYDATA /usr/lib/pbuilder/pbuilder-satisfydepends
+sudo $EATMYDATA setarch ${target_arch} /usr/lib/pbuilder/pbuilder-satisfydepends
 
 # Building the package
 binopts=''
@@ -57,4 +63,4 @@ if [ "$arch" != "$common_arch" ]; then
   binopts="-B"
 fi
 
-$EATMYDATA dpkg-buildpackage -rfakeroot $binopts
+$EATMYDATA setarch ${target_arch} dpkg-buildpackage -rfakeroot $binopts
