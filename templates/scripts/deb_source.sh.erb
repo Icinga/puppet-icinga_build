@@ -43,11 +43,20 @@ if [ "$release_type" == "release" ] ; then
 	version=$(echo $tarball | sed "s/\($proj\)_\(.*\)\.orig\.tar\.gz$/\2/")
 else
 	version=`cat ${project}.version | cut -f1`
-	package_version="${version}-0.`date +%Y.%m.%d`+$BUILD_VERSION"
 	git_commit=`cat ${project}.version | cut -f2`
 	tarball=`cat ${project}.version | cut -f3`
+
+	build_suffix=".`date +%Y.%m.%d`+$BUILD_VERSION.${dist}"
+	package_version="${version}${build_suffix}-0"
+
+	# link tarball as unique version
+	tarball_name="${tarball%.orig.tar*}"
+	tarball_suffix="${tarball:${#tarball_name}}"
+	versioned_tarball="${tarball_name}${build_suffix}${tarball_suffix}"
+	ln -s "$tarball" "$versioned_tarball"
 fi
 
+# TODO: fix
 target_dist="icinga-${dist}-snapshots"
 
 # extracting source into package source tree
