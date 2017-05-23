@@ -43,12 +43,14 @@ define icinga_build::pipeline::rpm (
   $_docker_image_source = regsubst($_docker_image, '{arch}', $arch[0])
   $_docker_image_binary = regsubst($_docker_image, '{arch}', '$arch')
   $_docker_image_test = regsubst($_docker_image, '{arch}', '$arch')
-  $_docker_image_publish = regsubst($_docker_image, '{arch}', '$arch')
+  $_docker_image_publish = regsubst($_docker_image, '{arch}', $arch[0])
 
   $_source_job = "rpm-${_os}-${_dist}-0source"
   $_binary_job = "rpm-${_os}-${_dist}-1binary"
   $_test_job   = "rpm-${_os}-${_dist}-2test"
-  $_publish_job   = "rpm-${_os}-${_dist}-3publish"
+  $_publish_job     = "rpm-${_os}-${_dist}-3-publish"
+  $_publish_job_old = "rpm-${_os}-${_dist}-3publish"
+  $_publish_type = 'rpm'
 
   jenkins_job { "${pipeline}/${_source_job}":
     ensure => $ensure,
@@ -65,9 +67,13 @@ define icinga_build::pipeline::rpm (
     config => template('icinga_build/jobs/rpm_test_matrix.xml.erb'),
   }
 
+  jenkins_job { "${pipeline}/${_publish_job_old}":
+    ensure => absent,
+  }
+
   jenkins_job { "${pipeline}/${_publish_job}":
     ensure => $ensure,
-    config => template('icinga_build/jobs/rpm_publish_matrix.xml.erb'),
+    config => template('icinga_build/jobs/rpm_publish.xml.erb'),
   }
 
   jenkins_job { "${pipeline}/rpm-${_os}-${_dist}":

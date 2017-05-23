@@ -72,17 +72,23 @@ describe 'icinga_build::pipeline::deb' do
         end
 
         it 'should have a test job' do
-          pending
-
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-2test')
-            .with_config(/SOMEUSEFULCONTENT/)
+            .with_config(/matrix-project/)
+            .with_config(/project="icinga2"/)
+            .with_config(%r{/start_test.sh})
         end
 
         it 'should have a publish job' do
-          pending
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-3publish').with_ensure(:absent)
 
-          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-3publish')
-            .with_config(/SOMEUSEFULCONTENT/)
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-3-publish')
+            .with_config(/<project>/)
+            .with_config(/project="icinga2"/)
+            .with_config(/os="debian"/)
+            .with_config(/dist="jessie"/)
+            .with_config(/publish_type="deb"/)
+            .without_config(/^arch=/)
+            .with_config(/curl_aptly/)
         end
       end
     end

@@ -92,8 +92,6 @@ define icinga_build::pipeline (
   )
 
   # add aptly credentials
-  ensure_resource('file', '/var/lib/jenkins/aptly', { 'ensure'  => 'directory' })
-
   # TODO: remove in next release
   file { "/var/lib/jenkins/aptly/${title}-credentials":
     ensure  => absent,

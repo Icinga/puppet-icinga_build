@@ -1,0 +1,179 @@
+#!/bin/bash
+
+set -ex
+
+: ${WORKSPACE:=`pwd`}
+: ${BRANCH:=}
+
+: ${aptly_server:=http://localhost}
+: ${aptly_user:=admin}
+: ${aptly_password:=admin}
+
+project=<%= @product.dump %>
+os=<%= @_os.dump %>
+dist=<%= @_dist.dump %>
+release_type=<%= @release_type.dump %>
+publish_type=<%= @_publish_type.dump %>
+
+if [ "$publish_type" = deb ]; then
+  # example: icinga-debian-jessie-release
+  upload_folder="${project}-${os}-${dist}-${release_type}"
+
+  # The repo to add upload to (Debian only)
+  # example: icinga-ubuntu-xenial-release
+  # example: icinga-ubuntu-xenial-giraffe
+  # example: icinga-ubuntu-xenial-snapshot
+  repo_name="icinga-${os}-${dist}-${release_type}"
+
+  # for publish (Debian only)
+  repo_dist="icinga-${dist}"
+  repo_prefix="${os}"
+
+  if [ "$release_type" != 'release' ]; then
+    repo_dist="${repo_dist}-${release_type}"
+    if [ "$release_type" = 'snapshot' ]; then
+      repo_dist="${repo_dist}s"
+    fi
+  fi
+elif [ "$publish_type" = rpm ]; then
+  # Note: we need the "allarch" component for the RPM script to work!
+  # example: icingaweb2-epel-5-allarch-release
+  upload_folder="${project}-${os}-${dist}-allarch-${release_type}"
+
+  # unused on RPM
+  repo_prefix=
+  repo_dist=
+  repo_name=
+fi
+
+# TODO: test this properly
+#if [ -n "$BRANCH" ] && [ "$BRANCH" != "master" ] ; then
+#  # BRANCH is non empty -> dev pipeline
+#  branch_escaped=$(echo "$BRANCH" | sed -e 's/\//_/g')
+#  upload_folder="${upload_folder}-${branch_escaped}"
+#  reponame="${upload_folder}-${branch_escaped}"
+#fi
+
+curl_output=`mktemp`
+curl_status=
+curl_aptly() {
+  { set +x; } 2>/dev/null
+  local uri="$1"
+  shift
+
+  : > "$curl_output"
+  curl_status='000'
+
+  if ! curl_status=$( (set -x; curl \
+    --silent --show-error --output "$curl_output" \
+    --insecure --user "${aptly_user}:${aptly_password}" \
+    --write-out '%{http_code}' "${aptly_server}${uri}" "$@") ) \
+    || [ "$curl_status" = '000' ]
+  then
+    echo "curl request failed!" >&2
+    false
+  fi
+  { set -x; } 2>/dev/null
+}
+curl_aptly_json() {
+  { set +x; } 2>/dev/null
+  local uri="$1"
+  shift
+  curl_aptly "$uri" -X POST -H 'Content-Type: application/json' "$@"
+}
+print_curl_output() {
+  cat "$curl_output"
+  echo
+}
+
+# Cleanup previous upload
+curl_aptly "/files/${upload_folder}" -X DELETE
+echo "$curl_status"
+
+
+# Uploading
+artifact=
+if [ "$publish_type" = deb ]; then
+  file_glob="*.deb *.tar.* *.dsc"
+elif [ "$publish_type" = rpm ]; then
+  file_glob="rpmbuild/RPMS/**/*.rpm"
+fi
+
+for artifact in $(shopt -s nullglob; echo ${file_glob}); do
+  echo "Uploading file: $artifact"
+  curl_aptly "/files/${upload_folder}" -X POST -F file=@"${artifact}"
+  if [ "$curl_status" != 200 ]; then
+    echo "Upload failed: ${curl_status}" >&2
+    print_curl_output
+  fi
+  # TODO: retry?
+done
+if [ -z ${artifact} ]; then
+  echo "No files to upload!" >&2
+  exit 1
+fi
+
+
+# Exit here if not Debian
+if [ "$publish_type" != deb ]; then
+  echo "Upload completed."
+  exit 0
+fi
+
+
+# Check if repo exists
+if ! curl_aptly "/repos/${repo_name}" || [ "$curl_status" != '200' ]; then
+  echo "Repository ${repo_name} does not exist on server!" >&2
+  print_curl_output
+  exit 1
+fi
+
+
+echo "Adding upload ${upload_folder} to repository ${repo_name}"
+if ! curl_aptly_json "/repos/${repo_name}/file/${upload_folder}" -d '{}' \
+  || [ "$curl_status" != 200 ]
+then
+  echo "Adding upload to repository failed!" >&2
+  print_curl_output
+  exit 1
+fi
+
+
+publish_repo_json() {
+tr -d "\n" <<JSON
+{
+  "SourceKind": "local",
+  "Sources": [
+    {"Name": "${repo_name}"}
+  ],
+  "Architectures": [
+    "i386","amd64","source"
+  ],
+  "Distribution": "${repo_dist}"
+}
+JSON
+}
+
+# Updating existing publish
+echo "Publishing repository ${repo_name}"
+if ! curl_aptly_json "/publish/${repo_prefix}/${repo_dist}" -X PUT -d '{}' \
+  || [ "$curl_status" != 200 ]
+then
+  if [ "$curl_status" = 404 ]; then
+    echo "Publishing repository ${repo_name} for the first time to ${repo_prefix}/${repo_dist}"
+    if ! curl_aptly_json "/publish/${repo_prefix}" -d "$(publish_repo_json)"\
+      || [ "$curl_status" != 200 ] && [ "$curl_status" != 201 ]
+    then
+      echo "Fresh publish failed: $curl_status" >&2
+      print_curl_output
+      exit 1
+    fi
+  else
+    echo "Publish failed: $curl_status" >&2
+    print_curl_output
+    exit 1
+  fi
+fi
+
+
+echo "Upload and publish complete."
