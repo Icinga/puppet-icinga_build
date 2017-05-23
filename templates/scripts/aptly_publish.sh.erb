@@ -36,6 +36,19 @@ if [ "$publish_type" = deb ]; then
     fi
   fi
 elif [ "$publish_type" = rpm ]; then
+  # Let's map some OS names to our repository names
+  case "$os" in
+    centos)
+      os=epel
+      ;;
+    sles)
+      os=SUSE
+      ;;
+    opensuse)
+      os=openSUSE
+      ;;
+  esac
+
   # Note: we need the "allarch" component for the RPM script to work!
   # example: icingaweb2-epel-5-allarch-release
   upload_folder="${project}-${os}-${dist}-allarch-${release_type}"
