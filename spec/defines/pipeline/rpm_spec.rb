@@ -71,17 +71,23 @@ describe 'icinga_build::pipeline::rpm' do
         end
 
         it 'should have a test job' do
-          pending
-
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-2test')
-            .with_config(/SOMEUSEFULCONTENT/)
+            .with_config(/matrix-project/)
+            .with_config(/project="icinga2"/)
+            .with_config(%r{/start_test.sh})
         end
 
         it 'should have a publish job' do
-          pending
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-3publish').with_ensure(:absent)
 
-          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-3publish')
-            .with_config(/SOMEUSEFULCONTENT/)
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-3-publish')
+            .with_config(/<project>/)
+            .with_config(/project="icinga2"/)
+            .with_config(/os="centos"/)
+            .with_config(/dist="7"/)
+            .with_config(/publish_type="rpm"/)
+            .without_config(/^arch=/)
+            .with_config(/curl_aptly/)
         end
       end
     end

@@ -69,6 +69,8 @@ define icinga_build::pipeline (
       jenkins_label  => $jenkins_label,
       tag            => $title,
       aptly_server   => $aptly_server,
+      aptly_user     => $aptly_user,
+      aptly_password => $aptly_password,
     }
   )
 
@@ -84,15 +86,15 @@ define icinga_build::pipeline (
       jenkins_label  => $jenkins_label,
       tag            => $title,
       aptly_server   => $aptly_server,
+      aptly_user     => $aptly_user,
+      aptly_password => $aptly_password,
     }
   )
 
   # add aptly credentials
-  ensure_resource('file', '/var/lib/jenkins/aptly', { 'ensure'  => 'directory' })
-
+  # TODO: remove in next release
   file { "/var/lib/jenkins/aptly/${title}-credentials":
-    ensure  => $ensure,
-    content => "user ${aptly_user}:${aptly_password}",
+    ensure  => absent,
   }
 
   # TODO: this is a dep cycle

@@ -12,6 +12,8 @@ define icinga_build::pipeline::deb (
   $docker_image   = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
   $aptly_server   = $icinga_build::pipeline::defaults::aptly_server,
+  $aptly_user     = $icinga_build::pipeline::defaults::aptly_user,
+  $aptly_password = $icinga_build::pipeline::defaults::aptly_password,
 ) {
   validate_re($ensure, '^(present|absent)$')
 
@@ -46,13 +48,14 @@ define icinga_build::pipeline::deb (
   $_docker_image_source = regsubst($_docker_image, '{arch}', $arch[0])
   $_docker_image_binary = regsubst($_docker_image, '{arch}', '$arch')
   $_docker_image_test = regsubst($_docker_image, '{arch}', '$arch')
-  $_docker_image_publish = regsubst($_docker_image, '{arch}', '$arch')
+  $_docker_image_publish = regsubst($_docker_image, '{arch}', $arch[0])
 
   $_source_job = "deb-${_os}-${_dist}-0source"
   $_binary_job = "deb-${_os}-${_dist}-1binary"
   $_test_job   = "deb-${_os}-${_dist}-2test"
-  $_publish_job = "deb-${_os}-${_dist}-3publish"
-
+  $_publish_job = "deb-${_os}-${_dist}-3-publish"
+  $_publish_job_old = "deb-${_os}-${_dist}-3publish"
+  $_publish_type = 'deb'
 
   jenkins_job { "${pipeline}/${_source_job}":
     ensure => $ensure,
@@ -69,14 +72,16 @@ define icinga_build::pipeline::deb (
     config => template('icinga_build/jobs/deb_test_matrix.xml.erb'),
   }
 
+  jenkins_job { "${pipeline}/${_publish_job_old}":
+    ensure => absent,
+  }
+
   jenkins_job { "${pipeline}/${_publish_job}":
     ensure => $ensure,
-    config => template('icinga_build/jobs/deb_publish_matrix.xml.erb'),
+    config => template('icinga_build/jobs/deb_publish.xml.erb'),
   }
 
   jenkins_job { "${pipeline}/deb-${_os}-${_dist}":
     ensure => absent,
-    config =>  template('icinga_build/jobs/pipeline_multi_job.xml.erb'),
   }
-
 }

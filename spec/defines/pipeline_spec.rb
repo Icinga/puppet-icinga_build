@@ -94,7 +94,8 @@ describe 'icinga_build::pipeline' do
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-0source')
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-1binary')
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-2test')
-          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-3publish')
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-3publish').with_ensure(:absent)
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-3-publish')
         end
 
         it do
@@ -104,13 +105,12 @@ describe 'icinga_build::pipeline' do
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-0source')
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-1binary')
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-2test')
-          should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-3publish')
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-3publish').with_ensure(:absent)
+          should contain_jenkins_job('icinga2-snapshot/rpm-centos-6-3-publish')
         end
 
         it do
-          should contain_file('/var/lib/jenkins/aptly').with_ensure('directory')
-          should contain_file('/var/lib/jenkins/aptly/icinga2-snapshot-credentials')
-            .with_content(/user admin:admin/)
+          should contain_file('/var/lib/jenkins/aptly/icinga2-snapshot-credentials').with_ensure(:absent)
         end
       end
 
@@ -192,7 +192,8 @@ describe 'icinga_build::pipeline' do
           should contain_jenkins_job('icinga2/deb-ubuntu-xenial-0source')
           should contain_jenkins_job('icinga2/deb-ubuntu-xenial-1binary')
           should contain_jenkins_job('icinga2/deb-ubuntu-xenial-2test')
-          should contain_jenkins_job('icinga2/deb-ubuntu-xenial-3publish')
+          should contain_jenkins_job('icinga2/deb-ubuntu-xenial-3publish').with_ensure(:absent)
+          should contain_jenkins_job('icinga2/deb-ubuntu-xenial-3-publish')
         end
 
         it do
@@ -202,13 +203,12 @@ describe 'icinga_build::pipeline' do
           should contain_jenkins_job('icinga2/deb-ubuntu-trusty-0source')
           should contain_jenkins_job('icinga2/deb-ubuntu-trusty-1binary')
           should contain_jenkins_job('icinga2/deb-ubuntu-trusty-2test')
-          should contain_jenkins_job('icinga2/deb-ubuntu-trusty-3publish')
+          should contain_jenkins_job('icinga2/deb-ubuntu-trusty-3publish').with_ensure(:absent)
+          should contain_jenkins_job('icinga2/deb-ubuntu-trusty-3-publish')
         end
 
         it do
-          should contain_file('/var/lib/jenkins/aptly').with_ensure('directory')
-          should contain_file('/var/lib/jenkins/aptly/icinga2-credentials')
-            .with_content(/user admin:admin/)
+          should contain_file('/var/lib/jenkins/aptly/icinga2-credentials').with_ensure(:absent)
         end
       end
     end
