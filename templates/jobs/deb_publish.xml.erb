@@ -35,6 +35,14 @@
           <description/>
           <defaultValue><%= @aptly_password.encode(xml: :text) %></defaultValue>
         </hudson.model.PasswordParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>allow_release</name>
+          <description>
+            Allow the actual upload, this is disabled on release builds by default.
+            So the build will fail here. Enable it manually to publish a new version!
+          </description>
+          <defaultValue><%= @release_type == 'snapshot' ? 'true' : 'false' %></defaultValue>
+        </hudson.model.BooleanParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
