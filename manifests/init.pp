@@ -14,7 +14,6 @@ class icinga_build (
   create_resources('icinga_build::folder', hiera_hash('icinga_build::folder', {}))
   create_resources('icinga_build::job',    hiera_hash('icinga_build::job', {}))
   create_resources('icinga_build::pipeline', hiera_hash('icinga_build::pipeline', {}))
-  create_resources('jenkins::plugin',      hiera_hash('jenkins::plugin', {}))
   create_resources('icinga_build::docker_job',  hiera_hash('icinga_build::docker_job', {}))
 
   if $ssh_private_key or $ssh_public_key {
