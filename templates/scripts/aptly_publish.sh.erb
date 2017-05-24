@@ -59,6 +59,15 @@ elif [ "$publish_type" = rpm ]; then
   repo_name=
 fi
 
+if [ "${allow_release:=}" != true ]; then
+  { set +x; } 2>/dev/null
+  echo "#######################################"
+  echo "# allow_release is set to '${allow_release}'"
+  echo "# You need to enable it to actually publish the package!"
+  echo "#######################################"
+  exit 1
+fi
+
 # TODO: test this properly
 #if [ -n "$BRANCH" ] && [ "$BRANCH" != "master" ] ; then
 #  # BRANCH is non empty -> dev pipeline
