@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -ex
+
 # configuration
 project=<%= @product.dump %>
 os=<%= @_os.dump %>
@@ -23,31 +25,35 @@ rm -rf "$project"
 mkdir "$project"
 cp -r packaging/${project}/${use_dist}/debian "$project"/
 
-# TODO: remove debug
-export UPSTREAM_GIT_URL=git://github.com/Icinga/"$project".git
-
 # download archive
 if [ "$release_type" == "release" ] ; then
-	sudo apt-get update -y
-	sudo apt-get install -y libwww-perl
-	uscan --download-current-version $project
+	(cd "$project" && uscan --download-current-version --verbose)
 else
 	packaging/${project}/get_snapshot -b "$BRANCH"
 fi
 
-
-#figure out version
+# figure out version
 if [ "$release_type" == "release" ] ; then
-	#TODO: Better
-	tarball=$(ls $project_*.orig.tar.gz)
-	version=$(echo $tarball | sed "s/\($proj\)_\(.*\)\.orig\.tar\.gz$/\2/")
+	tarball=$(ls ${project}_*.orig.tar.*)
+
+  debian_version=`dpkg-parsechangelog -l"${project}/debian/changelog" -S Version`
+	version=`echo "$debian_version" | cut -d- -f1`
+	package_version="${debian_version}.${dist}"
+
+	target_dist="icinga-${dist}"
 else
+  # snapshots
 	version=`cat ${project}.version | cut -f1`
 	git_commit=`cat ${project}.version | cut -f2`
 	tarball=`cat ${project}.version | cut -f3`
 
 	build_suffix=".`date +%Y.%m.%d`+$BUILD_VERSION.${dist}"
 	package_version="${version}${build_suffix}-0"
+
+  target_dist="icinga-${dist}-${release_type}"
+  if [ "${release_type}" = snapshots ]; then
+    target_dist="${target_dist}s" # snapshots
+  fi
 
 	# link tarball as unique version
 	tarball_name="${tarball%.orig.tar*}"
@@ -56,18 +62,18 @@ else
 	ln -s "$tarball" "$versioned_tarball"
 fi
 
-# TODO: fix
-target_dist="icinga-${dist}-snapshots"
-
 # extracting source into package source tree
 tar xf "${tarball}" --strip 1 -C "$project"/
 
 # build source debian package
-cd $project
+cd "$project"
 export DEBFULLNAME="Icinga Build System"
 export DEBEMAIL="info@icinga.com"
 
-if [ "$release_type" != "release" ] ; then
+if [ "$release_type" = "release" ] ; then
+	dch --force-bad-version --newversion="$package_version" --distribution="$target_dist" -- \
+		"Debian/Ubuntu package for $target_dist" < /dev/null
+else
 	dch --force-bad-version --newversion="$package_version" --distribution="$target_dist" -- \
 		"Snapshot build for version ${version}" \
 		"based on GIT commit ${git_commit}" \
