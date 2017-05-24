@@ -127,6 +127,7 @@ for artifact in $(shopt -s nullglob; echo ${file_glob}); do
   if [ "$curl_status" != 200 ]; then
     echo "Upload failed: ${curl_status}" >&2
     print_curl_output
+    exit 1
   fi
   # TODO: retry?
 done
