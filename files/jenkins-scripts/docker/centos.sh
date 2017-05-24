@@ -130,7 +130,7 @@ if [ "$os-$release" = "centos-5" ] ; then
     rpm -Uvh /tmp/epel-release.rpm
     rm -f /tmp/epel-release.rpm
 EOF
-else
+elif [ "$os" = centos ]; then
   chroot "$destdir" rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-"$release".noarch.rpm
 fi
 
