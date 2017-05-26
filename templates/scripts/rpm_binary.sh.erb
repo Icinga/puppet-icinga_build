@@ -41,7 +41,17 @@ case "$os" in
     ;;
   *)
     sudo setarch "$target_arch" yum clean expire-cache
-    sudo setarch "$target_arch" yum-builddep -y "${source_rpm}"
+    yum_worked=1
+    for i in $(seq 1 5); do
+      if sudo setarch "$target_arch" yum-builddep -y "${source_rpm}"; then
+        yum_worked=0
+        break
+      fi
+    done
+    if [ "$yum_worked" -ne 0 ]; then
+      echo "YUM had problems installing dependencies!" >&2
+      exit 1
+    fi
     ;;
 esac
 
