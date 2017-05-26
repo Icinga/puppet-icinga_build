@@ -53,4 +53,9 @@ cd rpmbuild/
 
 rpmbuild --nodeps -bs "SPECS/${project}.spec"
 
+# TODO: when a package is already releases this might be problems in test
+# (he could test the package in repository)
+rpm -qp --queryformat "%{VERSION}-%{RELEASE}" "SRPMS/${project}"*".src.rpm" \
+  >../"${project}-package.version"
+
 rpmlint --info --verbose "SPECS/${project}.spec" || true

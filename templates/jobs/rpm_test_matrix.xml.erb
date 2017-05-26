@@ -83,9 +83,12 @@
     </hudson.matrix.TextAxis>
   </axes>
   <builders>
+    <hudson.tasks.Shell>
+      <command>rm -rf archive/</command>
+    </hudson.tasks.Shell>
     <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38">
       <project><%= @_binary_job.encode(xml: :text) %>/arch=$arch</project>
-      <filter>rpmbuild/RPMS/**/*.rpm</filter>
+      <filter>rpmbuild/RPMS/**/*.rpm,*.version</filter>
       <target>$WORKSPACE/archive</target>
       <excludes/>
       <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>

@@ -41,14 +41,32 @@ EOF"
     ;;
 esac
 
+if [ ! -f archive/"${project}"-package.version ]; then
+  echo "archive/${project}-package.version artifact is required!" >&2
+  exit 1
+fi
+package_version=$(cat archive/"${project}"-package.version | tr -d '\r\n')
+
 # Helper to install packages
 install_package() {
+  versioned=1
+  if [ "$1" = "-n" ] || [ "$1" = "--no-version" ]; then
+    shift
+    versioned=0
+  fi
+
+  packages=()
+  for package in "$@"
+  do
+    packages+="${package}-${package_version}"
+  done
+
   case "$os" in
     centos|fedora)
-      sudo setarch "$target_arch" yum install -y "$@"
+      sudo setarch "$target_arch" yum install -y "${packages[@]}"
       ;;
     sles|opensuse)
-      sudo setarch "$target_arch" zypper install -y "$@"
+      sudo setarch "$target_arch" zypper install -y "${packages[@]}"
       ;;
     *)
       echo "OS $os not supported in testing - package install..." >&2
