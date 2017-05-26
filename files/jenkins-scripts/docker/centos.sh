@@ -153,8 +153,16 @@ REPO
 fi
 
 # Add Icinga's own repository, so we can ship build dependencies
-wget -O "$destdir"/etc/yum.repos.d/ICINGA-release.repo https://packages.icinga.com/epel/ICINGA-release.repo
-sed -i 's#http://#https://#' "$destdir"/etc/yum.repos.d/ICINGA-release.repo
+icinga_repo=
+if [ "$os" = "centos" ]; then
+  icinga_repo=epel
+elif [ "$os" = "fedora" ]; then
+  icinga_repo=fedora
+fi
+if [ -n "$icinga_repo" ]; then
+  wget -O "$destdir"/etc/yum.repos.d/ICINGA-release.repo https://packages.icinga.com/"${icinga_repo}"/ICINGA-release.repo
+  sed -i 's#http://#https://#' "$destdir"/etc/yum.repos.d/ICINGA-release.repo
+fi
 
 setarch_pkg=""
 if [ "$os-$release" = "centos-5" ]; then
