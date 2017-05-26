@@ -58,7 +58,7 @@ install_package() {
   packages=()
   for package in "$@"
   do
-    packages+="${package}-${package_version}"
+    packages+=("${package}-${package_version}")
   done
 
   case "$os" in
