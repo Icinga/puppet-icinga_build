@@ -27,8 +27,26 @@ export UPSTREAM_GIT_URL=git://github.com/Icinga/"$project".git
 
 # download archive
 if [ "$release_type" == "release" ] ; then
-	sudo yum update -y
-	sudo yum install -y rpmdevtools
+  # TODO: Move to images!
+  if [ "$os" = "centos" ]; then
+	  sudo yum update -y
+	  sudo yum install -y rpmdevtools
+  elif [ "$os" = sles ]; then
+    suse_version=$(echo "$dist" | sed 's/\./_SP/')
+    suse_repository=devel:tools
+    suse_repository_path="$suse_repository"
+    if [ "$suse_version" = 11_SP4 ]; then
+      suse_repository="home:lazyfrosch:devel:tools"
+      suse_repository_path="home:/lazyfrosch:/devel:/tools"
+    fi
+
+    sudo zypper addrepo http://download.opensuse.org/repositories/"$suse_repository_path"/SLE_"$suse_version"/"$suse_repository".repo
+    sudo zypper --gpg-auto-import-keys --non-interactive --no-gpg-checks install spectool
+  elif [ "$os" = opensuse ]; then
+    sudo zypper addrepo http://download.opensuse.org/repositories/devel:tools/openSUSE_Leap_"$dist"/devel:tools.repo
+    sudo zypper --gpg-auto-import-keys --non-interactive --no-gpg-checks install spectool
+  fi
+
 	spectool -g rpmbuild/SPECS/*.spec
 	mv *.tar.gz rpmbuild/SOURCES
 else
