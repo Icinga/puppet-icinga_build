@@ -64,7 +64,15 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <% if @release_type == "snapshot" -%>
+  <triggers>
+    <hudson.triggers.TimerTrigger>
+      <spec>H H(0-6) * * *</spec>
+    </hudson.triggers.TimerTrigger>
+  </triggers>
+  <% else -%>
   <triggers/>
+  <% end -%>
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
