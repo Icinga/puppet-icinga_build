@@ -8,6 +8,8 @@ define icinga_build::pipeline (
   $description           = undef,
   $matrix_deb            = { },
   $matrix_rpm            = { },
+  $parameters            = { },
+  $allow_release         = undef,
   $arch                  = $icinga_build::pipeline::defaults::arch,
   $docker_image          = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label         = $icinga_build::pipeline::defaults::jenkins_label,
@@ -37,6 +39,17 @@ define icinga_build::pipeline (
     $_release_type = $control_branch
   }
 
+  if $allow_release == undef and !('' in [$allow_release]) {
+    if $release_type == 'snapshot' {
+      $_allow_release = true
+    } else {
+      $_allow_release = false
+    }
+  } else {
+    validate_bool($allow_release)
+    $_allow_release = $allow_release
+  }
+
   unless $arch and $docker_image and $jenkins_label and $aptly_server and $aptly_user and $aptly_password {
     fail('Please ensure to configure icinga_build::pipeline::defaults, or add the parameters directly')
   }
@@ -64,6 +77,7 @@ define icinga_build::pipeline (
       control_repo   => $control_repo,
       control_branch => $control_branch,
       release_type   => $_release_type,
+      parameters     => $parameters,
       arch           => $arch,
       docker_image   => $docker_image,
       jenkins_label  => $jenkins_label,
@@ -71,6 +85,7 @@ define icinga_build::pipeline (
       aptly_server   => $aptly_server,
       aptly_user     => $aptly_user,
       aptly_password => $aptly_password,
+      allow_release  => $_allow_release,
     }
   )
 
@@ -81,6 +96,7 @@ define icinga_build::pipeline (
       control_repo   => $control_repo,
       control_branch => $control_branch,
       release_type   => $_release_type,
+      parameters     => $parameters,
       arch           => $arch,
       docker_image   => $docker_image,
       jenkins_label  => $jenkins_label,
@@ -88,6 +104,7 @@ define icinga_build::pipeline (
       aptly_server   => $aptly_server,
       aptly_user     => $aptly_user,
       aptly_password => $aptly_password,
+      allow_release  => $_allow_release,
     }
   )
 

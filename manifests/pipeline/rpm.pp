@@ -7,12 +7,14 @@ define icinga_build::pipeline::rpm (
   $ensure         = 'present',
   $os             = undef, # part of namevar
   $dist           = undef, # part of namevar
+  $parameters     = { },
   $arch           = $icinga_build::pipeline::defaults::arch,
   $docker_image   = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,
   $aptly_server   = $icinga_build::pipeline::defaults::aptly_server,
   $aptly_user     = $icinga_build::pipeline::defaults::aptly_user,
   $aptly_password = $icinga_build::pipeline::defaults::aptly_password,
+  $allow_release  = false,
   # TODO: remove deprecated
   $use_epel       = undef,
 ) {
@@ -20,6 +22,7 @@ define icinga_build::pipeline::rpm (
 
   validate_array($arch)
   validate_string($docker_image, $jenkins_label)
+  validate_bool($allow_release)
 
   unless $arch and $docker_image and $jenkins_label and $aptly_server {
     fail('Please ensure to configure icinga_build::pipeline::defaults, or add the parameters directly')

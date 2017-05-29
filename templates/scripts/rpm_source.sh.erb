@@ -13,7 +13,6 @@ release_type=<%= @release_type.dump %>
 set -ex
 
 : ${BUILD_VERSION:=1}
-: ${BRANCH="master"}
 : ${WORKDIR:=`pwd`}
 
 <%= scope.function_template(['icinga_build/scripts/rpm_functions.sh.erb']) %>
@@ -50,7 +49,7 @@ if [ "$release_type" == "release" ] ; then
 	spectool -g rpmbuild/SPECS/*.spec
 	mv *.tar.gz rpmbuild/SOURCES
 else
-	packaging/${project}/get_snapshot -b "$BRANCH"
+	packaging/${project}/get_snapshot
 
 	version=`cat ${project}.version | cut -f1`
 	revision="0.`date +%Y.%m.%d`+$BUILD_VERSION"

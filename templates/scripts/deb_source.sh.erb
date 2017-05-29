@@ -14,7 +14,6 @@ release_type=<%= @release_type.dump %>
 ###
 
 : ${BUILD_VERSION=1}
-: ${BRANCH="master"}
 
 # cleanup
 rm -f *.version
@@ -29,7 +28,7 @@ cp -r packaging/${project}/${use_dist}/debian "$project"/
 if [ "$release_type" == "release" ] ; then
 	(cd "$project" && uscan --download-current-version --verbose)
 else
-	packaging/${project}/get_snapshot -b "$BRANCH"
+	packaging/${project}/get_snapshot
 fi
 
 # figure out version
