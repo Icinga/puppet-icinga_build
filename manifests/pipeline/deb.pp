@@ -8,6 +8,7 @@ define icinga_build::pipeline::deb (
   $use            = undef,
   $os             = undef, # part of namevar
   $dist           = undef, # part of namevar
+  $parameters     = { },
   $arch           = $icinga_build::pipeline::defaults::arch,
   $docker_image   = $icinga_build::pipeline::defaults::docker_image,
   $jenkins_label  = $icinga_build::pipeline::defaults::jenkins_label,

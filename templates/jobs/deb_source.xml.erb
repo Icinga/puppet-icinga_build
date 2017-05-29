@@ -16,17 +16,26 @@
         <string><%= @_binary_job.encode(xml: :text) %></string>
       </projectNameList>
     </hudson.plugins.copyartifact.CopyArtifactPermissionProperty>
-    <% if @release_type == "dev" -%>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <hudson.model.StringParameterDefinition>
-          <name>BRANCH</name>
+        <%- unless @parameters.empty? -%>
+        <%- @parameters.each do |n,v|
+          type = (v.is_a?(Hash) && v.key?('type')) ? v['type'] : 'String'
+          raise Exception, "Invalid XML type for ParameterDefinition: #{type}" unless type =~ /^[a-z]+$/i
+          type = "hudson.model.#{type}ParameterDefinition"
+          default = (v.is_a?(Hash) ? v['default'] : v).to_s
+        -%>
+        <%= "<#{type}>" %>
+          <name><%= n.encode(xml: :text) %></name>
           <description/>
-          <defaultValue>master</defaultValue>
-        </hudson.model.StringParameterDefinition>
+          <%- unless default.empty? -%>
+          <defaultValue><%= default.encode(xml: :text) %></defaultValue>
+          <%- end -%>
+        <%= "</#{type}>" %>
+        <%- end -%>
+        <%- end -%>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
-    <% end -%>
   </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@2.5.0">
     <configVersion>2</configVersion>

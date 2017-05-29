@@ -13,13 +13,6 @@
     </jenkins.model.BuildDiscarderProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <% if @release_type == "dev" -%>
-        <hudson.model.StringParameterDefinition>
-          <name>BRANCH</name>
-          <description/>
-          <defaultValue>master</defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <% end -%>
         <hudson.model.StringParameterDefinition>
           <name>aptly_server</name>
           <description/>
