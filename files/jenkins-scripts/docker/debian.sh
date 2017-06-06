@@ -105,7 +105,7 @@ chroot ${destdir} apt-get install \
   --no-install-recommends -y --force-yes \
   ccache build-essential:native bison ssh-client cmake flex g++ libboost-dev \
   libboost-program-options-dev libboost-regex-dev libboost-system-dev libboost-test-dev \
-  libboost-thread-dev libmysqlclient-dev libpq-dev libssl-dev libyajl-dev fakeroot git \
+  libboost-thread-dev libssl-dev libyajl-dev fakeroot git \
   devscripts sudo curl python wget pkg-config ca-certificates libwww-perl libcrypt-ssleay-perl
 
 if [ "$release" = "xenial" ]; then
