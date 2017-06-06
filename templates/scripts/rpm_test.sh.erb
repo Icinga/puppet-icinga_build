@@ -45,13 +45,15 @@ EOF"
     if [[ "$dist" = 11.* ]]; then
       # when the Kernel has at least some SELinux code loaded (e.g. on CoreOS)
       # libselinux1 sees the process having an context, and assumes SELinux is enabled
-      getent group icinga >/dev/null || echo 'icinga:!:998:' >> /etc/group
-      getent group icingacmd >/dev/null || echo 'icingacmd:!:997:icinga' >> /etc/group
-      getent group icingaweb2 >/dev/null || echo 'icingaweb2:!:996:' >> /etc/group
-      if ! getent passwd icinga >/dev/null; then
-        echo 'icinga:x:998:998:icinga:/var/spool/icinga2:/sbin/nologin' >> /etc/passwd
-        echo 'icinga:!:17310:0:99999:7:::' >> /etc/shadow
-      fi
+      sudo sh -xe <<<"
+        getent group icinga >/dev/null || echo 'icinga:!:998:' >> /etc/group
+        getent group icingacmd >/dev/null || echo 'icingacmd:!:997:icinga' >> /etc/group
+        getent group icingaweb2 >/dev/null || echo 'icingaweb2:!:996:' >> /etc/group
+        if ! getent passwd icinga >/dev/null; then
+          echo 'icinga:x:998:998:icinga:/var/spool/icinga2:/sbin/nologin' >> /etc/passwd
+          echo 'icinga:!:17310:0:99999:7:::' >> /etc/shadow
+        fi
+      "
     fi
     ;;
   *)
