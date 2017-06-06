@@ -170,6 +170,10 @@ mount -o bind /dev "$destdir/dev"
 mount -o bind /proc "$destdir/proc"
 mount -o bind /sys "$destdir/sys"
 
+# refresh repos inside the chroot
+chroot "$destdir" zypper clean -a
+chroot "$destdir" zypper --non-interactive --no-gpg-checks --gpg-auto-import-keys ref
+
 # Activate image against SUSE repositories
 # These uses private credentials by the terms of a test license
 # See production hiera settings!
@@ -212,7 +216,7 @@ esac
 
 test -z ${repo_name} || chroot "$destdir" sh -ex <<ICINGAREPO
   zypper addrepo https://packages.icinga.com/${repo_name}/ICINGA-release.repo
-  zypper --non-interactive --no-gpg-checks ref
+  zypper --non-interactive --no-gpg-checks --gpg-auto-import-keys ref
 ICINGAREPO
 
 # Add jenkins user
