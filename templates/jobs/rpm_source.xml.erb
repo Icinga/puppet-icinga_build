@@ -16,9 +16,9 @@
         <string><%= @_binary_job.encode(xml: :text) %></string>
       </projectNameList>
     </hudson.plugins.copyartifact.CopyArtifactPermissionProperty>
+    <%- unless @parameters.empty? -%>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
-        <%- unless @parameters.empty? -%>
         <%- @parameters.each do |n,v|
           type = (v.is_a?(Hash) && v.key?('type')) ? v['type'] : 'String'
           raise Exception, "Invalid XML type for ParameterDefinition: #{type}" unless type =~ /^[a-z]+$/i
@@ -33,9 +33,9 @@
           <%- end -%>
         <%= "</#{type}>" %>
         <%- end -%>
-        <%- end -%>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
+    <%- end -%>
   </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@2.5.0">
     <configVersion>2</configVersion>
