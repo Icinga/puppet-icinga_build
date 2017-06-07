@@ -1,23 +1,26 @@
 define icinga_build::pipeline (
   $control_repo,
-  $ensure                = 'present',
-  $product               = undef, # part of namevar
-  $target                = undef, # part of namevar
-  $control_branch        = 'snapshot',
-  $release_type          = undef,
-  $description           = undef,
-  $matrix_deb            = { },
-  $matrix_rpm            = { },
-  $parameters            = { },
-  $allow_release         = undef,
-  $arch                  = $icinga_build::pipeline::defaults::arch,
-  $docker_image          = $icinga_build::pipeline::defaults::docker_image,
-  $jenkins_label         = $icinga_build::pipeline::defaults::jenkins_label,
-  $views_hash            = $icinga_build::pipeline::defaults::views_hash,
-  $view_default          = $icinga_build::pipeline::defaults::view_default,
-  $aptly_server          = $icinga_build::pipeline::defaults::aptly_server,
-  $aptly_user            = $icinga_build::pipeline::defaults::aptly_user,
-  $aptly_password        = $icinga_build::pipeline::defaults::aptly_password,
+  $ensure          = 'present',
+  $product         = undef, # part of namevar
+  $target          = undef, # part of namevar
+  $control_branch  = 'snapshot',
+  $upstream_repo   = undef,
+  $upstream_branch = 'master',
+  $release_type    = undef,
+  $description     = undef,
+  $matrix_deb      = {},
+  $matrix_rpm      = {},
+  $parameters      = {},
+  $allow_release   = undef,
+  $scm_trigger     = undef,
+  $arch            = $icinga_build::pipeline::defaults::arch,
+  $docker_image    = $icinga_build::pipeline::defaults::docker_image,
+  $jenkins_label   = $icinga_build::pipeline::defaults::jenkins_label,
+  $views_hash      = $icinga_build::pipeline::defaults::views_hash,
+  $view_default    = $icinga_build::pipeline::defaults::view_default,
+  $aptly_server    = $icinga_build::pipeline::defaults::aptly_server,
+  $aptly_user      = $icinga_build::pipeline::defaults::aptly_user,
+  $aptly_password  = $icinga_build::pipeline::defaults::aptly_password,
 ) {
   validate_re($ensure, '^(present|absent)$')
 
@@ -37,6 +40,15 @@ define icinga_build::pipeline (
     $_release_type = $release_type
   } else {
     $_release_type = $control_branch
+  }
+
+  if $_release_type != 'release' {
+    unless $upstream_repo and $upstream_branch {
+      fail("${title}: You need to set \$upstream_repo and \$upstream_branch for non-release builds!")
+    }
+
+    validate_string($upstream_repo)
+    validate_string($upstream_branch)
   }
 
   if $allow_release == undef and !('' in [$allow_release]) {
@@ -70,48 +82,56 @@ define icinga_build::pipeline (
   # TODO: what to do with target?
 
   # create matrizes
-  create_resources('icinga_build::pipeline::deb', prefix($matrix_deb, "${title}-"), {
-      ensure         => $ensure,
-      product        => $_product,
-      pipeline       => $title,
-      control_repo   => $control_repo,
-      control_branch => $control_branch,
-      release_type   => $_release_type,
-      parameters     => $parameters,
-      arch           => $arch,
-      docker_image   => $docker_image,
-      jenkins_label  => $jenkins_label,
-      tag            => $title,
-      aptly_server   => $aptly_server,
-      aptly_user     => $aptly_user,
-      aptly_password => $aptly_password,
-      allow_release  => $_allow_release,
+  create_resources('icinga_build::pipeline::deb', prefix($matrix_deb, "${title}-"),
+    {
+      ensure          => $ensure,
+      product         => $_product,
+      pipeline        => $title,
+      control_repo    => $control_repo,
+      control_branch  => $control_branch,
+      upstream_repo   => $upstream_repo,
+      upstream_branch => $upstream_branch,
+      release_type    => $_release_type,
+      parameters      => $parameters,
+      arch            => $arch,
+      docker_image    => $docker_image,
+      jenkins_label   => $jenkins_label,
+      tag             => $title,
+      aptly_server    => $aptly_server,
+      aptly_user      => $aptly_user,
+      aptly_password  => $aptly_password,
+      allow_release   => $_allow_release,
+      scm_trigger     => $scm_trigger,
     }
   )
 
-  create_resources('icinga_build::pipeline::rpm', prefix($matrix_rpm, "${title}-"), {
-      ensure         => $ensure,
-      product        => $_product,
-      pipeline       => $title,
-      control_repo   => $control_repo,
-      control_branch => $control_branch,
-      release_type   => $_release_type,
-      parameters     => $parameters,
-      arch           => $arch,
-      docker_image   => $docker_image,
-      jenkins_label  => $jenkins_label,
-      tag            => $title,
-      aptly_server   => $aptly_server,
-      aptly_user     => $aptly_user,
-      aptly_password => $aptly_password,
-      allow_release  => $_allow_release,
+  create_resources('icinga_build::pipeline::rpm', prefix($matrix_rpm, "${title}-"),
+    {
+      ensure          => $ensure,
+      product         => $_product,
+      pipeline        => $title,
+      control_repo    => $control_repo,
+      control_branch  => $control_branch,
+      upstream_repo   => $upstream_repo,
+      upstream_branch => $upstream_branch,
+      release_type    => $_release_type,
+      parameters      => $parameters,
+      arch            => $arch,
+      docker_image    => $docker_image,
+      jenkins_label   => $jenkins_label,
+      tag             => $title,
+      aptly_server    => $aptly_server,
+      aptly_user      => $aptly_user,
+      aptly_password  => $aptly_password,
+      allow_release   => $_allow_release,
+      scm_trigger     => $scm_trigger,
     }
   )
 
   # add aptly credentials
   # TODO: remove in next release
   file { "/var/lib/jenkins/aptly/${title}-credentials":
-    ensure  => absent,
+    ensure => absent,
   }
 
   # TODO: this is a dep cycle

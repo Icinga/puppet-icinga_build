@@ -8,6 +8,8 @@ os=<%= @_os.dump %>
 dist=<%= @_dist.dump %>
 use_dist=<%= @_use.dump %>
 release_type=<%= @release_type.dump %>
+control_branch=<%= @control_branch.dump %>
+upstream_branch=<%= @upstream_branch.dump %>
 
 ###
 # please do not edit below
@@ -20,6 +22,12 @@ rm -f *.version
 rm -f *.tar* *.dsc *.deb *.changes
 rm -rf "$project"
 
+# ensure we checked out the packaging tree
+cd packaging/
+git clean -fxd
+git checkout -B deb/"$control_branch" packaging/deb/"$control_branch"
+cd ../
+
 # creating project directory
 mkdir "$project"
 cp -r packaging/${project}/${use_dist}/debian "$project"/
@@ -28,7 +36,11 @@ cp -r packaging/${project}/${use_dist}/debian "$project"/
 if [ "$release_type" == "release" ] ; then
 	(cd "$project" && uscan --download-current-version --verbose)
 else
-	packaging/${project}/get_snapshot
+  UPSTREAM_GIT_BRANCH=origin/"$upstream_branch" \
+  UPSTREAM_GIT_NOUPDATE=1 \
+  UPSTREAM_GIT_NOREPO=1 \
+  GIT_DIR=packaging/.git \
+    packaging/${project}/get_snapshot
 fi
 
 # figure out version

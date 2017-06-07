@@ -15,8 +15,9 @@ define icinga_build::pipeline::rpm (
   $aptly_user     = $icinga_build::pipeline::defaults::aptly_user,
   $aptly_password = $icinga_build::pipeline::defaults::aptly_password,
   $allow_release  = false,
-  # TODO: remove deprecated
-  $use_epel       = undef,
+  $upstream_repo   = undef,
+  $upstream_branch = undef,
+  $scm_trigger     = undef,
 ) {
   validate_re($ensure, '^(present|absent)$')
 
@@ -27,6 +28,17 @@ define icinga_build::pipeline::rpm (
   unless $arch and $docker_image and $jenkins_label and $aptly_server {
     fail('Please ensure to configure icinga_build::pipeline::defaults, or add the parameters directly')
   }
+
+  if $release_type != 'release' {
+    unless $upstream_repo and $upstream_branch {
+      fail("${title}: You need to set \$upstream_repo and \$upstream_branch for non-release builds!")
+    }
+
+    validate_string($upstream_repo)
+    validate_string($upstream_branch)
+  }
+
+  if $scm_trigger { validate_string($scm_trigger) }
 
   $_name = regsubst($name, "^${pipeline}-", '')
 

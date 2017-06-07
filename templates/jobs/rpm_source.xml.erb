@@ -42,30 +42,33 @@
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
         <url><%= @control_repo.encode(xml: :text) %></url>
+        <name>packaging</name>
       </hudson.plugins.git.UserRemoteConfig>
+      <%- if @upstream_repo -%>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url><%= @upstream_repo.encode(xml: :text) %></url>
+        <name>origin</name>
+      </hudson.plugins.git.UserRemoteConfig>
+      <%- end -%>
     </userRemoteConfigs>
     <branches>
+      <%- if @upstream_repo -%>
       <hudson.plugins.git.BranchSpec>
-        <name>*/rpm/<%= @control_branch.encode(xml: :text) %></name>
+        <name>origin/<%= @upstream_branch.encode(xml: :text) %></name>
       </hudson.plugins.git.BranchSpec>
+      <%- else -%>
+      <hudson.plugins.git.BranchSpec>
+        <name>packaging/rpm/<%= @control_branch.encode(xml: :text) %></name>
+      </hudson.plugins.git.BranchSpec>
+      <%- end -%>
     </branches>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
     <browser class="hudson.plugins.git.browser.GithubWeb"/>
     <submoduleCfg class="list"/>
     <extensions>
-      <hudson.plugins.git.extensions.impl.CloneOption>
-        <shallow>true</shallow>
-        <noTags>true</noTags>
-        <reference/>
-        <depth>0</depth>
-      </hudson.plugins.git.extensions.impl.CloneOption>
       <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
         <relativeTargetDir>packaging</relativeTargetDir>
       </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
-      <hudson.plugins.git.extensions.impl.PathRestriction>
-        <includedRegions><%= @product.encode(xml: :text) %>/*</includedRegions>
-        <excludedRegions/>
-      </hudson.plugins.git.extensions.impl.PathRestriction>
     </extensions>
   </scm>
   <assignedNode><%= @jenkins_label.encode(xml: :text) %></assignedNode>
@@ -73,11 +76,12 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <% if @release_type == "snapshot" -%>
+  <% if @scm_trigger -%>
   <triggers>
-    <hudson.triggers.TimerTrigger>
-      <spec>H H(0-6) * * *</spec>
-    </hudson.triggers.TimerTrigger>
+    <hudson.triggers.SCMTrigger>
+      <spec><%= @scm_trigger.encode(xml: :text) %></spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
   </triggers>
   <% else -%>
   <triggers/>
