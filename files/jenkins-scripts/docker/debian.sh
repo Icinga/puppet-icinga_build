@@ -6,6 +6,8 @@ set -ex
 : ${release:=}
 : ${arch:=}
 : ${IMAGE_PREFIX:='netways/'}
+: ${MIRROR_DEBIAN:=http://cdn-fastly.deb.debian.org/debian}
+: ${MIRROR_UBUNTU:=http://archive.ubuntu.com/ubuntu}
 
 if [ -z "$os" ]; then
   echo "env variable 'os' not set!" >&2
@@ -34,13 +36,13 @@ fi
 
 case $os in
 debian)
-  mirror="http://mirror.noris.net/debian/"
+  mirror="${MIRROR_DEBIAN}/"
   components="main"
   keyring=debian-archive-keyring
   keyring_arg="--keyring /usr/share/keyrings/debian-archive-keyring.gpg"
   ;;
 ubuntu)
-  mirror="http://mirror.noris.net/ubuntu/"
+  mirror="${MIRROR_UBUNTU}/"
   components="main,multiverse,universe"
   keyring=ubuntu-keyring
   ;;
@@ -77,16 +79,16 @@ ${debootstrap_cmd} ${keyring_arg} --verbose --components=$components --include=d
 
 if [ "$os" = "debian" ]; then
   cat > "$destdir"/etc/apt/sources.list <<APT
-# $release
-deb     http://mirror.noris.net/debian $release          main contrib non-free
-deb-src http://mirror.noris.net/debian $release          main contrib non-free
+# ${release}
+deb     ${MIRROR_DEBIAN}  ${release}  main contrib non-free
+deb-src ${MIRROR_DEBIAN}  ${release}  main contrib non-free
 APT
 
   if [ "$release" != "unstable" ]; then
     cat >> "$destdir"/etc/apt/sources.list <<APT
-# $release-security
-deb     http://security.debian.org/  $release/updates  main contrib non-free
-deb-src http://security.debian.org/  $release/updates  main contrib non-free
+# ${release}-security
+deb     http://security.debian.org/  ${release}/updates  main contrib non-free
+deb-src http://security.debian.org/  ${release}/updates  main contrib non-free
 APT
   fi
 fi
