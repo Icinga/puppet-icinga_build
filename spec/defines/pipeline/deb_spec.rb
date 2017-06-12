@@ -25,11 +25,13 @@ describe 'icinga_build::pipeline::deb' do
 
         let :params do
           {
-            product:        'icinga2',
-            pipeline:       'icinga2-snapshot',
-            control_repo:   'https://github.com/Icinga/icinga-packaging.git',
-            control_branch: 'snapshot',
-            release_type: 'snapshot'
+            product:         'icinga2',
+            pipeline:        'icinga2-snapshot',
+            control_repo:    'https://github.com/Icinga/icinga-packaging.git',
+            control_branch:  'snapshot',
+            upstream_repo:   'https://github.com/Icinga/icinga2.git',
+            upstream_branch: 'support/x.x',
+            release_type:    'snapshot'
           }
         end
 
@@ -43,15 +45,15 @@ describe 'icinga_build::pipeline::deb' do
         it do
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-0source')
             .with_config(/#{Regexp.escape(params[:control_repo])}/)
-            .with_config(%r{\*/deb/#{Regexp.escape(params[:control_branch])}})
+            .with_config(%r{BranchSpec.*\r?\n.*origin/support/x.x})
             .with_config(%r{<assignedNode>docker-test</assignedNode>})
             .with_config(%r{<image>private-registry:5000/icinga/debian-jessie-x86_64</image>})
-            .with_config(%r{<includedRegions>icinga2/jessie/\*</includedRegions>})
             .with_config(%r{<projectNameList>\s*<string>deb-debian-jessie-1binary</string>\s*</projectNameList>}m)
             .with_config(/project="icinga2"/)
             .with_config(/os="debian"/)
             .with_config(/dist="jessie"/)
             .with_config(/use_dist="jessie"/)
+            .with_config(%r{upstream_branch="support/x.x"})
             .with_config(/dpkg-buildpackage/)
         end
 
@@ -79,6 +81,7 @@ describe 'icinga_build::pipeline::deb' do
         end
 
         it 'should have a publish job' do
+
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-3publish').with_ensure(:absent)
 
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-3-publish')

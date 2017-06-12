@@ -25,14 +25,16 @@ describe 'icinga_build::pipeline' do
 
         let :params do
           {
-            description:    'Test description with some text',
-            control_repo:   'https://github.com/Icinga/icinga-packaging.git',
-            control_branch: 'snapshot',
-            matrix_deb:     {
+            description:     'Test description with some text',
+            control_repo:    'https://github.com/Icinga/icinga-packaging.git',
+            control_branch:  'snapshot',
+            upstream_repo:   'https://github.com/Icinga/icinga2.git',
+            upstream_branch: 'support/x.x',
+            matrix_deb:      {
               'debian-jessie' => {},
               'debian-wheezy' => {}
             },
-            matrix_rpm:     {
+            matrix_rpm:      {
               'centos-6' => {},
               'centos-7' => {}
             }
@@ -126,6 +128,7 @@ describe 'icinga_build::pipeline' do
             control_branch: 'stable',
             product:        'icinga2',
             target:         'release',
+            release_type:   'release',
             matrix_deb:     {
               'ubuntu-trusty' => {
                 'use' => 'ubuntu'

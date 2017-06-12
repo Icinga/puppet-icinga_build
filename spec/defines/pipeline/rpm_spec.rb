@@ -25,11 +25,13 @@ describe 'icinga_build::pipeline::rpm' do
 
         let :params do
           {
-            product:        'icinga2',
-            pipeline:       'icinga2-snapshot',
-            control_repo:   'https://github.com/Icinga/icinga-packaging.git',
-            control_branch: 'snapshot',
-            release_type: 'snapshot'
+            product:         'icinga2',
+            pipeline:        'icinga2-snapshot',
+            control_repo:    'https://github.com/Icinga/icinga-packaging.git',
+            control_branch:  'snapshot',
+            upstream_repo:   'https://github.com/Icinga/icinga2.git',
+            upstream_branch: 'support/x.x',
+            release_type:    'snapshot'
           }
         end
 
@@ -43,15 +45,15 @@ describe 'icinga_build::pipeline::rpm' do
         it do
           should contain_jenkins_job('icinga2-snapshot/rpm-centos-7-0source')
             .with_config(/#{Regexp.escape(params[:control_repo])}/)
-            .with_config(%r{\*/rpm/#{Regexp.escape(params[:control_branch])}})
+            .with_config(%r{BranchSpec.*\r?\n.*origin/support/x.x})
             .with_config(%r{<assignedNode>docker-test</assignedNode>})
             .with_config(%r{<image>private-registry:5000/icinga/centos-7-x86_64</image>})
-            .with_config(%r{<includedRegions>icinga2/\*</includedRegions>})
             .with_config(%r{<projectNameList>\s*<string>rpm-centos-7-1binary</string>\s*</projectNameList>}m)
             .with_config(/project="icinga2"/)
             .with_config(/os="centos"/)
             .with_config(/dist="7"/)
-            .with_config(%r{rpmbuild --nodeps -bs})
+            .with_config(%r{upstream_branch="support/x.x"})
+            .with_config(/rpmbuild --nodeps -bs/)
         end
 
         it do
