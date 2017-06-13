@@ -22,7 +22,8 @@ set -ex
 # ensure we checked out the packaging tree
 cd packaging/
 git clean -fxd
-git checkout -B rpm/"$control_branch" packaging/rpm/"$control_branch"
+git branch -f rpm/"$control_branch" packaging/rpm/"$control_branch"
+git checkout -f rpm/"$control_branch"
 cd ../
 
 #this must not fail TODO: Something better, dirty hack
