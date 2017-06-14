@@ -107,6 +107,14 @@ else
   PATH="${CCACHE_LINKS}:${PATH}"
 fi
 
+# detect and setup CCACHE_BASEDIR
+# extract source RPM
+rpm --define "_topdir ${WORKDIR}/rpmbuild" -ivh "${source_rpm}"
+# build the rpm with prep only
+rpmbuild -bp "rpmbuild/SPECS/${project}.spec"
+# detect the source dir
+export CCACHE_BASEDIR="${WORKDIR}/rpmbuild/BUILD/$(ls "${WORKDIR}/rpmbuild/BUILD/" | head -n1)"
+
 # build the actual packages
 eval "$(get_rpmbuild --rebuild "${source_rpm}")"
 
