@@ -93,8 +93,14 @@ define icinga_build::pipeline::deb (
     ensure => absent,
   }
 
+  if $ensure == present and $release_type == 'dev' {
+    $_publish_ensure = absent
+  } else {
+    $_publish_ensure = $ensure
+  }
+
   jenkins_job { "${pipeline}/${_publish_job}":
-    ensure => $ensure,
+    ensure => $_publish_ensure,
     config => template('icinga_build/jobs/deb_publish.xml.erb'),
   }
 
