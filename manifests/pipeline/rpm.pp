@@ -86,13 +86,18 @@ define icinga_build::pipeline::rpm (
     ensure => absent,
   }
 
+  if $ensure == present and $release_type == 'dev' {
+    $_publish_ensure = absent
+  } else {
+    $_publish_ensure = $ensure
+  }
+
   jenkins_job { "${pipeline}/${_publish_job}":
-    ensure => $ensure,
+    ensure => $_publish_ensure,
     config => template('icinga_build/jobs/rpm_publish.xml.erb'),
   }
 
   jenkins_job { "${pipeline}/rpm-${_os}-${_dist}":
     ensure => absent,
-    config =>  template('icinga_build/jobs/pipeline_multi_job.xml.erb'),
   }
 }
