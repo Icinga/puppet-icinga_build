@@ -16,11 +16,21 @@ upstream_branch=<%= @upstream_branch.dump %>
 ###
 
 : ${BUILD_VERSION=1}
+: ${BUILD_BRANCH:=''}
+: ${BUILD_REF:=''}
 
 # cleanup
 rm -f *.version
 rm -f *.tar* *.dsc *.deb *.changes
 rm -rf "$project"
+
+if [ -n "$BUILD_BRANCH" ]; then
+  upstream_branch="$BUILD_BRANCH"
+  UPSTREAM_GIT_BRANCH=origin/"$upstream_branch"
+elif [ -n "$BUILD_REF" ]; then
+  upstream_branch="$BUILD_REF"
+  UPSTREAM_GIT_BRANCH="$BUILD_REF"
+fi
 
 # ensure we checked out the packaging tree
 cd packaging/
@@ -36,7 +46,8 @@ cp -r packaging/${project}/${use_dist}/debian "$project"/
 if [ "$release_type" == "release" ] ; then
 	(cd "$project" && uscan --download-current-version --verbose)
 else
-  UPSTREAM_GIT_BRANCH=origin/"$upstream_branch" \
+  export UPSTREAM_GIT_BRANCH
+
   UPSTREAM_GIT_NOUPDATE=1 \
   UPSTREAM_GIT_NOREPO=1 \
   GIT_DIR=packaging/.git \
