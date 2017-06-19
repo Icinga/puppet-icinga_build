@@ -24,6 +24,11 @@ set -ex
 if [ -n "$BUILD_BRANCH" ]; then
   upstream_branch="$BUILD_BRANCH"
   UPSTREAM_GIT_BRANCH=origin/"$upstream_branch"
+
+  # if this branch also exists in packaging rpm/XX
+  if git --git-dir=packaging/.git/ rev-parse refs/remotes/packaging/rpm/"$upstream_branch" &>/dev/null; then
+    control_branch="$upstream_branch"
+  fi
 elif [ -n "$BUILD_REF" ]; then
   upstream_branch="$BUILD_REF"
   UPSTREAM_GIT_BRANCH="$BUILD_REF"
