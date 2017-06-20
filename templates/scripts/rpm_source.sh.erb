@@ -32,6 +32,8 @@ if [ -n "$BUILD_BRANCH" ]; then
 elif [ -n "$BUILD_REF" ]; then
   upstream_branch="$BUILD_REF"
   UPSTREAM_GIT_BRANCH="$BUILD_REF"
+else
+  UPSTREAM_GIT_BRANCH=origin/"$upstream_branch"
 fi
 
 # ensure we checked out the packaging tree
@@ -70,7 +72,8 @@ if [ "$release_type" == "release" ] ; then
 	spectool -g rpmbuild/SPECS/*.spec
 	mv *.tar.gz rpmbuild/SOURCES
 else
-  UPSTREAM_GIT_BRANCH=origin/"$upstream_branch" \
+  export UPSTREAM_GIT_BRANCH
+
   UPSTREAM_GIT_NOUPDATE=1 \
   UPSTREAM_GIT_NOREPO=1 \
   GIT_DIR=packaging/.git \

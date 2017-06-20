@@ -35,6 +35,8 @@ if [ -n "$BUILD_BRANCH" ]; then
 elif [ -n "$BUILD_REF" ]; then
   upstream_branch="$BUILD_REF"
   UPSTREAM_GIT_BRANCH="$BUILD_REF"
+else
+  UPSTREAM_GIT_BRANCH=origin/"$upstream_branch"
 fi
 
 # ensure we checked out the packaging tree
