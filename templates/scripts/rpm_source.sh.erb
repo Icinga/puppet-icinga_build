@@ -50,7 +50,7 @@ mv -v rpmbuild/SOURCES/*.spec rpmbuild/SPECS/
 # download archive
 if [ "$release_type" == "release" ] ; then
   # TODO: Move to images!
-  if [ "$os" = "centos" ]; then
+  if [ "$os" = "centos" -o "$os" = "fedora" ]; then
 	  sudo yum update -y
 	  sudo yum install -y rpmdevtools
   elif [ "$os" = sles ]; then
