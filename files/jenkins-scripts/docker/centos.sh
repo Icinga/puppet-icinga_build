@@ -169,12 +169,6 @@ if [ "$os-$release" = "centos-5" ]; then
   setarch_pkg="setarch"
 fi
 
-spectool_f26=""
-if [ "$os-$release" = "fedora-26" ]; then
-  spectool_f26="rpmspectool"
-fi
-
-
 success=0
 # TODO: why retry??
 for i in $(seq 10); do
@@ -183,7 +177,7 @@ for i in $(seq 10); do
   if setarch $link_arch chroot $destdir yum install -y --allowerasing \
     sudo wget patch which rpm-build redhat-rpm-config yum-utils rpm-sign tar \
     expect ccache patch rpmlint make util-linux git iproute curl ${devtools} \
-    yum-plugin-ovl $setarch_pkg $spectool_f26 `cat jenkins-scripts/docker/extra-centos-packages`
+    yum-plugin-ovl $setarch_pkg `cat jenkins-scripts/docker/extra-centos-packages`
    then
     success=1
     break;
