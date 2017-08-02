@@ -65,7 +65,7 @@ fi
 if [ "$release_type" == "release" ] ; then
 	tarball=$(ls ${project}_*.orig.tar.*)
 
-  debian_version=`dpkg-parsechangelog -l"${project}/debian/changelog" -S Version`
+  debian_version=`dpkg-parsechangelog -l"${project}/debian/changelog" | egrep '^Version:' | cut -f 2- -d ' '`
 	version=`echo "$debian_version" | cut -d- -f1`
 	package_version="${debian_version}.${dist}"
 
