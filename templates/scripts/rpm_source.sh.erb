@@ -70,7 +70,11 @@ if [ "$release_type" == "release" ] ; then
   fi
 
 	spectool -g rpmbuild/SPECS/*.spec
-	mv *.tar.gz rpmbuild/SOURCES
+
+	# copy tarballs if present
+	if ls *.tar.* &>/dev/null; then
+	  mv *.tar.* rpmbuild/SOURCES
+	fi
 else
   export UPSTREAM_GIT_BRANCH
 
