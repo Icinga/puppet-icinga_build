@@ -69,11 +69,12 @@ centos)
 	wget http://vault.centos.org/5.11/os/$link_arch/CentOS/centos-release-5-11.el5.centos.$link_arch.rpm
   ;;
   6)
+    rpmurl=http://mirror.centos.org/centos/6/os/x86_64/Packages/centos-release-6-9.el6.12.3.x86_64.rpm
     if [ "$link_arch" = "i386" ]; then
-	  wget ftp://mirror.switch.ch/pool/4/mirror/centos/6.9/os/$link_arch/Packages/centos-release-6-9.el6.centos.12.3.i686.rpm
-	else
-      wget ftp://mirror.switch.ch/pool/4/mirror/centos/6.9/os/$link_arch/Packages/centos-release-6-9.el6.centos.12.3.$link_arch.rpm
+      rpmurl="${rpmurl/x86_64/$link_arch}" # in path
+      rpmurl="${rpmurl/x86_64/i686}" # in file name
 	fi
+    wget "$rpmurl"
   ;;
   7)
     wget http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-4.1708.el7.centos.x86_64.rpm
