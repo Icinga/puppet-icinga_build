@@ -173,8 +173,12 @@ success=0
 # TODO: why retry??
 for i in $(seq 10); do
   setarch $link_arch chroot $destdir yum update -y
+  yumopts=
+  if [ "$os" = fedora ]; then
+    yumopts='--allowerasing'
+  fi
   # TODO: remove extra packages file?
-  if setarch $link_arch chroot $destdir yum install -y --allowerasing \
+  if setarch $link_arch chroot $destdir yum install -y $yumopts \
     sudo wget patch which rpm-build redhat-rpm-config yum-utils rpm-sign tar \
     expect ccache patch rpmlint make util-linux git iproute curl ${devtools} \
     yum-plugin-ovl $setarch_pkg `cat jenkins-scripts/docker/extra-centos-packages`
