@@ -75,7 +75,7 @@ define icinga_build::pipeline (
     ensure       => $ensure,
     description  => "Icinga build pipeline for ${_product} with release target ${_target}\n\n${description}",
     views_xml    => template('icinga_build/views/pipeline.xml.erb'),
-    icon         => 'aggregate-status',
+    #icon         => 'aggregate-status',
     view_default => $view_default,
   }
 
