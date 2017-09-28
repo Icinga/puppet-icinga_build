@@ -57,7 +57,7 @@ if [ "$release_type" == "release" ] ; then
     suse_version=$(echo "$dist" | sed 's/\./_SP/')
     suse_repository=devel:tools
     suse_repository_path="$suse_repository"
-    if [ "$suse_version" = 11_SP4 ]; then
+    if [ "$suse_version" = 11_SP4 ] || [ "$suse_version" = 12_SP1 ]; then
       suse_repository="home:lazyfrosch:devel:tools"
       suse_repository_path="home:/lazyfrosch:/devel:/tools"
     fi
