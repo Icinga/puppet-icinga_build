@@ -87,12 +87,12 @@ if &quot;%arch%&quot;==&quot;x86&quot; (&#13;
   set &quot;postgres_dir=C:/Program Files/PostgreSQL/9.5&quot;&#13;
   set &quot;MYSQL_DIR=C:/Program Files/MySQL/MySQL Connector C 6.1&quot;&#13;
 )&#13;
-cmake -G &quot;%gen%&quot; -DCPACK_GENERATOR=WIX -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../inst &quot;-DPostgreSQL_ROOT=%postgres_dir%&quot; -DBOOST_ROOT=c:/local/boost_1_61_0 -DOPENSSL_ROOT_DIR=%openssl_dir% -DOPENSSL_INCLUDE_DIR=%openssl_dir%/include -DOPENSSL_LIBRARIES=%openssl_dir%/lib -DBOOST_LIBRARYDIR=c:/local/boost_1_61_0/%boost_libdir% -DICINGA2_UNITY_BUILD=ON &quot;-DFLEX_EXECUTABLE=C:/local/win_flex_bison/win_flex.exe&quot; &quot;-DBISON_EXECUTABLE=C:/local/win_flex_bison/win_bison.exe&quot; -DICINGA2_WITH_STUDIO=ON -DwxWidgets_ROOT_DIR=c:/local/wxWidgets-3.1.0 -DwxWidgets_LIB_DIR=C:/local/wxWidgets-3.1.0/lib/%wxwidgets_libdir% ..</command>
+cmake -G &quot;%gen%&quot; -DCPACK_GENERATOR=WIX -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=../inst &quot;-DPostgreSQL_ROOT=%postgres_dir%&quot; -DBOOST_ROOT=c:/local/boost_1_61_0 -DOPENSSL_ROOT_DIR=%openssl_dir% -DOPENSSL_INCLUDE_DIR=%openssl_dir%/include -DOPENSSL_LIBRARIES=%openssl_dir%/lib -DBOOST_LIBRARYDIR=c:/local/boost_1_61_0/%boost_libdir% -DICINGA2_UNITY_BUILD=ON &quot;-DFLEX_EXECUTABLE=C:/local/win_flex_bison/win_flex.exe&quot; &quot;-DBISON_EXECUTABLE=C:/local/win_flex_bison/win_bison.exe&quot; -DICINGA2_WITH_STUDIO=ON -DwxWidgets_ROOT_DIR=c:/local/wxWidgets-3.1.0 -DwxWidgets_LIB_DIR=C:/local/wxWidgets-3.1.0/lib/%wxwidgets_libdir% ..</command>
     </hudson.tasks.BatchFile>
     <hudson.tasks.BatchFile>
       <command>del build\Icinga*.msi build\*.zip&#13;
-cmake --build build --target PACKAGE --config Release&#13;
-rem &quot;C:\Program Files\7-zip\7z&quot; a -tzip build\icinga2-symbols.zip build\Bin\Release\Release\*.pdb</command>
+cmake --build build --target PACKAGE --config RelWithDebInfo&#13;
+rem &quot;C:\Program Files\7-zip\7z&quot; a -tzip build\icinga2-%pkgname%-%arch%-symbols.zip build\Bin\RelWithDebInfo\RelWithDebInfo\*.pdb</command>
     </hudson.tasks.BatchFile>
     <hudson.tasks.BatchFile>
       <command>cd build&#13;
@@ -100,6 +100,7 @@ rem ctest -C Release -T test -O Test.xml --output-on-failure&#13;
 rem cmd /c &quot;C:\jenkins\ctest_convert\convert.py . C:\jenkins\ctest_convert\conv.xsl&quot; &gt; Test.xml&#13;
 move Icinga*.msi Icinga2-%pkgname%-%arch%.msi&#13;
 c:\local\curl\curl -s -X POST -k -K c:\jenkins/repo_aptly_passwd -F file=@Icinga2-%pkgname%-%arch%.msi https://icinga-aptly.icinga.netways.de/api/files/windows&#13;
+c:\local\curl\curl -s -X POST -k -K c:\jenkins/repo_aptly_passwd -F file=@icinga2-%pkgname%-%arch%-symbols.zip https://icinga-aptly.icinga.netways.de/api/files/windows&#13;
 cd choco&#13;
 if NOT &quot;%pkgname%&quot; == &quot;snapshot&quot; (
 move icinga2.nupkg Icinga2-%pkgname%.nupkg&#13;
