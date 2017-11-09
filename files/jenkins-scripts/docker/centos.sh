@@ -53,7 +53,7 @@ rpm --initdb --root $destdir
 case $os in 
 fedora)
   case $release in
-  23 | 24 | 25 | 26)
+  23 | 24 | 25 | 26 | 27)
 	wget ftp://mirror.switch.ch/pool/4/mirror/fedora/linux/releases/$release/Server/$link_arch/os/Packages/f/fedora-release-$release-1.noarch.rpm
 	wget ftp://mirror.switch.ch/pool/4/mirror/fedora/linux/releases/$release/Server/$link_arch/os/Packages/f/fedora-repos-$release-1.noarch.rpm
   ;;
