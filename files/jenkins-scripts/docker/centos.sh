@@ -56,6 +56,10 @@ fedora)
   23 | 24 | 25 | 26 | 27)
 	wget ftp://mirror.switch.ch/pool/4/mirror/fedora/linux/releases/$release/Server/$link_arch/os/Packages/f/fedora-release-$release-1.noarch.rpm
 	wget ftp://mirror.switch.ch/pool/4/mirror/fedora/linux/releases/$release/Server/$link_arch/os/Packages/f/fedora-repos-$release-1.noarch.rpm
+	# We probably need this from 27 onwards
+	if [ "$release" = "27" ]; then
+		wget ftp://mirror.switch.ch/pool/4/mirror/fedora/linux/releases/$release/Server/$link_arch/os/Packages/f/fedora-gpg-keys-$release-1.noarch.rpm
+	fi
   ;;
   *)
     echo "Invalid release $release specified."
