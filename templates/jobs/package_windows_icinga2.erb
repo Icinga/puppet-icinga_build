@@ -92,10 +92,12 @@ cmake -G &quot;%gen%&quot; -DCPACK_GENERATOR=WIX -DCMAKE_BUILD_TYPE=RelWithDebIn
     <hudson.tasks.BatchFile>
       <command>del build\Icinga*.msi build\*.zip&#13;
 cmake --build build --target PACKAGE --config RelWithDebInfo&#13;
-rem &quot;C:\Program Files\7-zip\7z&quot; a -tzip build\icinga2-%pkgname%-%arch%-symbols.zip build\Bin\RelWithDebInfo\RelWithDebInfo\*.pdb</command>
+</command>
     </hudson.tasks.BatchFile>
     <hudson.tasks.BatchFile>
-      <command>cd build&#13;
+<command>
+&quot;C:\Program Files\7-zip\7z&quot; a -tzip build\icinga2-%pkgname%-%arch%-symbols.zip build\Bin\RelWithDebInfo\RelWithDebInfo\*.pdb     
+cd build&#13;
 rem ctest -C Release -T test -O Test.xml --output-on-failure&#13;
 rem cmd /c &quot;C:\jenkins\ctest_convert\convert.py . C:\jenkins\ctest_convert\conv.xsl&quot; &gt; Test.xml&#13;
 move Icinga*.msi Icinga2-%pkgname%-%arch%.msi&#13;
