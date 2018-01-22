@@ -127,14 +127,17 @@ if [[ "$release" == 11* ]]; then
     # on SLES 11, rpmbuild is part of the rpm package
     rpmbuild=
     gpgcheck='--no-gpg-check'
+	suseconnect=
 else
     rpmbuild=rpm-build
     gpgcheck=
+	suseconnect=SUSEConnect
 fi
+
 
 # Run the chroot installation
 run_zypper --non-interactive ${gpgcheck} install \
-    --auto-agree-with-licenses --no-recommends zypper SUSEConnect ${certs}
+    --auto-agree-with-licenses --no-recommends zypper $suseconnect ${certs}
 
 if [ "$os" = sles ]; then
   # repair base product link
