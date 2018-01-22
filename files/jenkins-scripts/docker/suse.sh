@@ -134,9 +134,7 @@ fi
 
 # Run the chroot installation
 run_zypper --non-interactive ${gpgcheck} install \
-    --auto-agree-with-licenses --no-recommends \
-    aaa_base ${release_package} rpm ${rpmbuild} zypper sudo curl wget expect ccache gcc \
-    patch rpmlint gawk db-utils git tar python-xml iproute2 ${certs}
+    --auto-agree-with-licenses --no-recommends zypper SUSEConnect ${certs}
 
 if [ "$os" = sles ]; then
   # repair base product link
@@ -193,11 +191,18 @@ if [ "$os" = sles ]; then
     rm -f "$destdir"/tmp/activation.sh
 
     echo "Running update after activation..."
+	chroot "$destdir" zypper ref
     chroot "$destdir" zypper update -y
   else
     echo "WARNING: Activation file missing! ${activation_file}" >&2
   fi
 fi
+
+# Install a few programs so we don't have to in the build jobs
+chroot "$destdir" zypper --non-interactive ${gpgcheck} install \
+    --auto-agree-with-licenses --no-recommends \
+    aaa_base ${release_package} rpm ${rpmbuild} sudo curl wget expect ccache gcc \
+    patch rpmlint gawk db-utils git tar python-xml iproute2 
 
 # Add Icinga's own repository, so we can ship build dependencies
 repo_name=
