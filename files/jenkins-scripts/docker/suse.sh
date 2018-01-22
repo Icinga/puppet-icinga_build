@@ -97,7 +97,7 @@ sles)
   12.*)
     repo_release=${release/./-sp}
     run_zypper ar "${SLES_MIRROR}/sles_dvds/${os}-${repo_release}-${arch}-dvd1" "${link_arch}-dvd1"
-    run_zypper ar "${SLES_MIRROR}/sles_dvds/${os}-${repo_release}-sdk-${arch}-dvd1" "sdk-${link_arch}-dvd1"
+#   run_zypper ar "${SLES_MIRROR}/sles_dvds/${os}-${repo_release}-sdk-${arch}-dvd1" "sdk-${link_arch}-dvd1"
     ;;
   *)
     echo "Unknown release $release"
