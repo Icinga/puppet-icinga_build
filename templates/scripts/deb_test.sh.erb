@@ -3,5 +3,12 @@
 set -ex
 
 project=<%= @product.dump %>
+control_deb=<%= @control_deb.dump unless @control_deb.nil? %>
 
-./packaging/$project/testing/start_test.sh
+if [ -n "$control_deb" ]; then
+  pkg_src=./packaging
+else
+  pkg_src=./packaging/${project}
+fi
+
+"${pkg_src}"/testing/start_test.sh

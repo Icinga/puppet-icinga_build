@@ -42,7 +42,7 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url><%= @control_repo.encode(xml: :text) %></url>
+        <url><%= (@control_deb || @control_repo).encode(xml: :text) %></url>
         <name>packaging</name>
       </hudson.plugins.git.UserRemoteConfig>
       <%- if @upstream_repo -%>
@@ -59,7 +59,7 @@
       </hudson.plugins.git.BranchSpec>
       <%- else -%>
       <hudson.plugins.git.BranchSpec>
-        <name>packaging/deb/<%= @control_branch.encode(xml: :text) %></name>
+        <name>packaging/<%= @control_deb.nil? ? 'deb/' : '' %><%= @control_branch.encode(xml: :text) %></name>
       </hudson.plugins.git.BranchSpec>
       <%- end -%>
     </branches>

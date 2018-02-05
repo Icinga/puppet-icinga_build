@@ -27,12 +27,12 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url><%= @control_repo.encode(xml: :text) %></url>
+        <url><%= (@control_deb || @control_repo).encode(xml: :text) %></url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
       <hudson.plugins.git.BranchSpec>
-        <name>*/deb/<%= @control_branch.encode(xml: :text) %></name>
+        <name>*/<%= @control_deb.nil? ? 'deb/' : '' %><%= @control_branch.encode(xml: :text) %></name>
       </hudson.plugins.git.BranchSpec>
     </branches>
     <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>

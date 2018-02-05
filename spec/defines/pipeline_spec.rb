@@ -18,7 +18,7 @@ describe 'icinga_build::pipeline' do
         }"
       end
 
-      context 'with a simple example' do
+      context 'with a split control repos' do
         let :title do
           'icinga2-snapshot'
         end
@@ -26,13 +26,14 @@ describe 'icinga_build::pipeline' do
         let :params do
           {
             description:     'Test description with some text',
-            control_repo:    'https://github.com/Icinga/icinga-packaging.git',
-            control_branch:  'snapshot',
+            control_rpm:     'https://github.com/Icinga/rpm-icinga2.git',
+            control_deb:     'https://github.com/Icinga/deb-icinga2.git',
+            control_branch:  'master',
             upstream_repo:   'https://github.com/Icinga/icinga2.git',
             upstream_branch: 'support/x.x',
             matrix_deb:      {
-              'debian-jessie' => {},
-              'debian-wheezy' => {}
+              'debian-jessie'  => {},
+              'debian-stretch' => {},
             },
             matrix_rpm:      {
               'centos-6' => {},
@@ -41,12 +42,12 @@ describe 'icinga_build::pipeline' do
           }
         end
 
-        it { should compile.with_all_deps }
+        it {should compile.with_all_deps}
 
-        it { should contain_icinga_build__pipeline('icinga2-snapshot') }
+        it {should contain_icinga_build__pipeline('icinga2-snapshot')}
 
         # pre_condition
-        it { should contain_class('icinga_build::pipeline::defaults') }
+        it {should contain_class('icinga_build::pipeline::defaults')}
 
         it do
           should contain_icinga_build__folder('icinga2-snapshot')
@@ -61,7 +62,8 @@ describe 'icinga_build::pipeline' do
           should contain_icinga_build__pipeline__deb('icinga2-snapshot-debian-jessie')
             .with_product('icinga2')
             .with_pipeline('icinga2-snapshot')
-            .with_control_repo(params[:control_repo])
+            .with_control_repo(nil)
+            .with_control_deb(%r{/deb-})
             .with_control_branch(params[:control_branch])
             .with_jenkins_label('docker-test')
             .with_docker_image('private-registry:5000/icinga/{os}-{dist}-{arch}')
@@ -74,20 +76,21 @@ describe 'icinga_build::pipeline' do
         end
 
         it do
-          should contain_icinga_build__pipeline__deb('icinga2-snapshot-debian-wheezy')
+          should contain_icinga_build__pipeline__deb('icinga2-snapshot-debian-stretch')
 
           # for coverage
-          should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-0source')
-          should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-1binary')
-          should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-2test')
-          should contain_jenkins_job('icinga2-snapshot/deb-debian-wheezy-3publish')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-stretch-0source')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-stretch-1binary')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-stretch-2test')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-stretch-3publish')
         end
 
         it do
           should contain_icinga_build__pipeline__rpm('icinga2-snapshot-centos-7')
             .with_product('icinga2')
             .with_pipeline('icinga2-snapshot')
-            .with_control_repo(params[:control_repo])
+            .with_control_repo(nil)
+            .with_control_rpm(%r{/rpm-})
             .with_control_branch(params[:control_branch])
             .with_jenkins_label('docker-test')
             .with_docker_image('private-registry:5000/icinga/{os}-{dist}-{arch}')
@@ -124,7 +127,8 @@ describe 'icinga_build::pipeline' do
         let :params do
           {
             description:    'Test description with some text',
-            control_repo:   'https://github.com/Icinga/icinga-packaging.git',
+            control_rpm:    'https://github.com/Icinga/rpm-icinga2.git',
+            control_deb:    'https://github.com/Icinga/deb-icinga2.git',
             control_branch: 'stable',
             product:        'icinga2',
             target:         'release',
@@ -160,12 +164,12 @@ describe 'icinga_build::pipeline' do
           }
         end
 
-        it { should compile.with_all_deps }
+        it {should compile.with_all_deps}
 
         # pre_condition
-        it { should contain_class('icinga_build::pipeline::defaults') }
+        it {should contain_class('icinga_build::pipeline::defaults')}
 
-        it { should contain_icinga_build__pipeline('icinga2') }
+        it {should contain_icinga_build__pipeline('icinga2')}
 
         it do
           should contain_icinga_build__folder('icinga2')
@@ -186,7 +190,8 @@ describe 'icinga_build::pipeline' do
             .with_product('icinga2')
             .with_pipeline('icinga2')
             .with_use('ubuntu')
-            .with_control_repo(params[:control_repo])
+            .with_control_repo(nil)
+            .with_control_deb(%r{/deb-})
             .with_control_branch(params[:control_branch])
             .with_jenkins_label('docker-test')
             .with_docker_image('private-registry:5000/icinga/{os}-{dist}-{arch}')
@@ -212,6 +217,53 @@ describe 'icinga_build::pipeline' do
 
         it do
           should contain_file('/var/lib/jenkins/aptly/icinga2-credentials').with_ensure(:absent)
+        end
+      end
+
+      context 'with a old control_repo logic' do
+        let :title do
+          'icinga2-snapshot'
+        end
+
+        let :params do
+          {
+            description:     'Test description with some text',
+            control_repo:    'https://github.com/Icinga/icinga-packaging.git',
+            control_branch:  'snapshot',
+            upstream_repo:   'https://github.com/Icinga/icinga2.git',
+            upstream_branch: 'support/x.x',
+            matrix_deb:      {
+              'debian-jessie' => {},
+              'debian-stretch' => {}
+            },
+            matrix_rpm:      {
+              'centos-6' => {},
+              'centos-7' => {}
+            }
+          }
+        end
+
+        it {should compile.with_all_deps}
+
+        it {should contain_icinga_build__pipeline('icinga2-snapshot')}
+
+        it do
+          should contain_icinga_build__pipeline__deb('icinga2-snapshot-debian-stretch')
+            .with_product('icinga2')
+            .with_pipeline('icinga2-snapshot')
+            .with_control_repo('https://github.com/Icinga/icinga-packaging.git')
+            .with_control_rpm(nil)
+            .with_control_deb(nil)
+            .with_control_branch(params[:control_branch])
+            .with_jenkins_label('docker-test')
+            .with_docker_image('private-registry:5000/icinga/{os}-{dist}-{arch}')
+
+          # for coverage
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-stretch-0source')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-stretch-1binary')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-stretch-2test')
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-stretch-3publish').with_ensure(:absent)
+          should contain_jenkins_job('icinga2-snapshot/deb-debian-stretch-3-publish')
         end
       end
     end
