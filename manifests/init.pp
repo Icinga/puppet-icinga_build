@@ -1,6 +1,7 @@
 class icinga_build (
   $ssh_private_key = undef,
   $ssh_public_key  = undef,
+  $cli_password_hash = undef,
 ) {
   contain ::jenkins
   contain ::jenkins::cli_helper
@@ -43,7 +44,7 @@ class icinga_build (
     }
   }
 
-  if $ssh_public_key {
+  if $ssh_public_key or $cli_password_hash {
     # configure Jenkins user to manage locally
     file { 'jenkins users':
       ensure => directory,
