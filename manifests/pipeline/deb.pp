@@ -1,6 +1,7 @@
 define icinga_build::pipeline::deb (
   $pipeline,
   $product,
+  $control_deb,
   $control_repo,
   $control_branch,
   $release_type,

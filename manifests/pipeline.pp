@@ -1,5 +1,7 @@
 define icinga_build::pipeline (
-  $control_repo,
+  $control_repo    = undef,
+  $control_rpm     = undef,
+  $control_deb     = undef,
   $ensure          = 'present',
   $product         = undef, # part of namevar
   $target          = undef, # part of namevar
@@ -24,12 +26,18 @@ define icinga_build::pipeline (
 ) {
   validate_re($ensure, '^(present|absent)$')
 
+  if $control_repo and ($control_rpm or $control_deb) {
+    fail('Can not mix control_repo with control_rpm/control_deb setting!')
+  } elsif !$control_repo and !$control_rpm and !$control_deb {
+    fail('You must configure control_repo or control_rpm/control_deb!')
+  }
+
   if $views_hash { validate_hash($views_hash) }
 
   if $product and $target {
     $_product = $product
     $_target = $target
-  } elsif $name =~ /^([\w\d\._]+)-([\w\d\._]+)$/ {
+  } elsif $name =~ /^([\w\d.\-_]+)-([\w\d._]+)$/ {
     $_product = $1
     $_target = $2
   } else {
@@ -87,6 +95,7 @@ define icinga_build::pipeline (
       ensure          => $ensure,
       product         => $_product,
       pipeline        => $title,
+      control_deb     => $control_deb,
       control_repo    => $control_repo,
       control_branch  => $control_branch,
       upstream_repo   => $upstream_repo,
@@ -110,6 +119,7 @@ define icinga_build::pipeline (
       ensure          => $ensure,
       product         => $_product,
       pipeline        => $title,
+      control_rpm     => $control_rpm,
       control_repo    => $control_repo,
       control_branch  => $control_branch,
       upstream_repo   => $upstream_repo,

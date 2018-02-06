@@ -8,6 +8,7 @@ os=<%= @_os.dump %>
 dist=<%= @_dist.dump %>
 use_dist=<%= @_use.dump %>
 release_type=<%= @release_type.dump %>
+control_deb=<%= @control_deb.dump unless @control_deb.nil? %>
 control_branch=<%= @control_branch.dump %>
 upstream_branch=<%= @upstream_branch.dump %>
 
@@ -24,13 +25,26 @@ rm -f *.version
 rm -f *.tar* *.dsc *.deb *.changes
 rm -rf "$project"
 
+if [ -n "$control_deb" ]; then
+  pkg_src=packaging
+else
+  pkg_src=packaging/${project}
+  control_branch="deb/$control_branch"
+fi
+
 if [ -n "$BUILD_BRANCH" ]; then
   upstream_branch="$BUILD_BRANCH"
   UPSTREAM_GIT_BRANCH=origin/"$upstream_branch"
 
-  # if this branch also exists in packaging deb/XX
-  if git --git-dir=packaging/.git/ rev-parse refs/remotes/packaging/deb/"$upstream_branch" &>/dev/null; then
-    control_branch="$upstream_branch"
+  if [ -n "$control_deb" ]; then
+    test_branch="$upstream_branch"
+  else
+    test_branch="deb/$upstream_branch"
+  fi
+
+  # if this branch also exists in packaging XX
+  if git --git-dir=packaging/.git/ rev-parse refs/remotes/packaging/"$test_branch" &>/dev/null; then
+    control_branch="$test_branch"
   fi
 elif [ -n "$BUILD_REF" ]; then
   upstream_branch="$BUILD_REF"
@@ -42,12 +56,13 @@ fi
 # ensure we checked out the packaging tree
 cd packaging/
 git clean -fxd
-git checkout -B deb/"$control_branch" packaging/deb/"$control_branch"
+git checkout -B "$control_branch" packaging/"$control_branch"
+GIT_PAGER=cat git show -s "$control_branch"
 cd ../
 
 # creating project directory
 mkdir "$project"
-cp -r packaging/${project}/${use_dist}/debian "$project"/
+cp -r ${pkg_src}/${use_dist}/debian "$project"/
 
 # download archive
 if [ "$release_type" == "release" ] ; then
@@ -58,7 +73,7 @@ else
   UPSTREAM_GIT_NOUPDATE=1 \
   UPSTREAM_GIT_NOREPO=1 \
   GIT_DIR=packaging/.git \
-    packaging/${project}/get_snapshot
+    ${pkg_src}/get_snapshot
 fi
 
 # figure out version

@@ -1,6 +1,7 @@
 define icinga_build::pipeline::rpm (
   $pipeline,
   $product,
+  $control_rpm,
   $control_repo,
   $control_branch,
   $release_type,

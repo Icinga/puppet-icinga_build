@@ -5,6 +5,7 @@ set -ex
 project=<%= @product.dump %>
 os=<%= @_os.dump %>
 dist=<%= @_dist.dump %>
+control_rpm=<%= @control_rpm.dump unless @control_rpm.nil? %>
 
 # from job environment
 : ${arch:=x86_64}
@@ -15,6 +16,12 @@ if [ "$arch" = x86 ]; then
   target_arch=i386
 else
   target_arch="$arch"
+fi
+
+if [ -n "$control_rpm" ]; then
+  pkg_src=./packaging
+else
+  pkg_src=./packaging/${project}
 fi
 
 # Preparing local repository
@@ -96,4 +103,4 @@ install_package() {
   esac
 }
 
-source ./packaging/"$project"/testing/start_test.sh
+source "${pkg_src}"/testing/start_test.sh

@@ -5,6 +5,7 @@ project=<%= @product.dump %>
 os=<%= @_os.dump %>
 dist=<%= @_dist.dump %>
 release_type=<%= @release_type.dump %>
+control_rpm=<%= @control_rpm.dump unless @control_rpm.nil? %>
 control_branch=<%= @control_branch.dump %>
 upstream_branch=<%= @upstream_branch.dump %>
 
@@ -21,13 +22,26 @@ set -ex
 
 <%= scope.function_template(['icinga_build/scripts/rpm_functions.sh.erb']) %>
 
+if [ -n "$control_rpm" ]; then
+  pkg_src=packaging
+else
+  pkg_src=packaging/${project}
+  control_branch="rpm/$control_branch"
+fi
+
 if [ -n "$BUILD_BRANCH" ]; then
   upstream_branch="$BUILD_BRANCH"
   UPSTREAM_GIT_BRANCH=origin/"$upstream_branch"
 
-  # if this branch also exists in packaging rpm/XX
-  if git --git-dir=packaging/.git/ rev-parse refs/remotes/packaging/rpm/"$upstream_branch" &>/dev/null; then
-    control_branch="$upstream_branch"
+  if [ -n "$control_rpm" ]; then
+    test_branch="$upstream_branch"
+  else
+    test_branch="rpm/$upstream_branch"
+  fi
+
+  # if this branch also exists in packaging XX
+  if git --git-dir=packaging/.git/ rev-parse refs/remotes/packaging/"$test_branch" &>/dev/null; then
+    control_branch="$test_branch"
   fi
 elif [ -n "$BUILD_REF" ]; then
   upstream_branch="$BUILD_REF"
@@ -39,12 +53,13 @@ fi
 # ensure we checked out the packaging tree
 cd packaging/
 git clean -fxd
-git branch -f rpm/"$control_branch" packaging/rpm/"$control_branch"
-git checkout -f rpm/"$control_branch"
+git branch -f "$control_branch" packaging/"$control_branch"
+git checkout -f "$control_branch"
+GIT_PAGER=cat git show -s "$control_branch"
 cd ../
 
-#this must not fail TODO: Something better, dirty hack
-cp -v packaging/${project}/* rpmbuild/SOURCES/ || true
+# copy to rpmbuild environment
+cp -rv ${pkg_src}/* rpmbuild/SOURCES/
 mv -v rpmbuild/SOURCES/*.spec rpmbuild/SPECS/
 
 # download archive
@@ -81,7 +96,7 @@ else
   UPSTREAM_GIT_NOUPDATE=1 \
   UPSTREAM_GIT_NOREPO=1 \
   GIT_DIR=packaging/.git \
-    packaging/${project}/get_snapshot
+    ${pkg_src}/get_snapshot
 
 	version=`cat ${project}.version | cut -f1`
 	revision="0.`date +%Y.%m.%d`+$BUILD_VERSION"
