@@ -118,7 +118,7 @@ artifact=
 if [ "$publish_type" = deb ]; then
   file_glob="*.deb *.tar.* *.dsc"
 elif [ "$publish_type" = rpm ]; then
-  file_glob="rpmbuild/RPMS/**/*.rpm"
+  file_glob="rpmbuild/RPMS/**/*.rpm rpmbuild/SRPMS/*.rpm"
 fi
 
 for artifact in $(shopt -s nullglob; echo ${file_glob}); do

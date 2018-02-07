@@ -65,7 +65,7 @@
     -%>
     <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38">
       <project><%= @_binary_job.encode(xml: :text) %>/arch=<%= a.encode(xml: :text) %></project>
-      <filter>rpmbuild/RPMS/**/*.rpm</filter>
+      <filter>rpmbuild/RPMS/**/*.rpm, rpmbuild/SRPMS/*.rpm</filter>
       <target/>
       <excludes/>
       <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
