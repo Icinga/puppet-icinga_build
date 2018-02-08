@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <actions/>
+  <description/>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>25</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <%- unless @_parameters.empty? -%>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <%- @_parameters.each do |n,v|
+          type = (v.is_a?(Hash) && v.key?('type')) ? v['type'] : 'String'
+          raise Exception, "Invalid XML type for ParameterDefinition: #{type}" unless type =~ /^[a-z]+$/i
+          type = "hudson.model.#{type}ParameterDefinition"
+          default = (v.is_a?(Hash) ? v['default'] : v).to_s
+        -%>
+        <%= "<#{type}>" %>
+          <name><%= n.encode(xml: :text) %></name>
+          <description/>
+          <%- unless default.empty? -%>
+          <defaultValue><%= default.encode(xml: :text) %></defaultValue>
+          <%- end -%>
+        <%= "</#{type}>" %>
+        <%- end -%>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <%- end -%>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.7.0">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url><%= @git_repo.encode(xml: :text) %></url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/<%= @git_branch.encode(xml: :text) %></name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <assignedNode><%= @jenkins_label.encode(xml: :text) %></assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <% if @scm_trigger -%>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec><%= @scm_trigger.encode(xml: :text) %></spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <% else -%>
+  <triggers/>
+  <% end -%>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash -xe
+<% if @custom_shell %>
+<%= @custom_shell.encode(xml: :text) %>
+<% else -%>
+make all
+if [ "$PUBLISH" = "true" ]; then
+  make push
+fi
+<% end -%>
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <com.michelin.cio.hudson.plugins.maskpasswords.MaskPasswordsBuildWrapper/>
+    <%- unless @build_image.empty? -%>
+    <com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper plugin="docker-custom-build-environment@1.6.5">
+      <selector class="com.cloudbees.jenkins.plugins.okidocki.PullDockerImageSelector">
+        <image><%= @build_image.encode(xml: :text) %></image>
+      </selector>
+      <dockerHost plugin="docker-commons@1.11"/>
+      <dockerRegistryCredentials/>
+      <verbose>false</verbose>
+      <volumes>
+        <com.cloudbees.jenkins.plugins.okidocki.Volume>
+          <hostPath>/var/run/docker.sock</hostPath>
+          <path>/var/run/docker.sock</path>
+        </com.cloudbees.jenkins.plugins.okidocki.Volume>
+      </volumes>
+      <privileged>false</privileged>
+      <group>docker</group>
+      <command>/bin/cat</command>
+      <forcePull>true</forcePull>
+      <net>bridge</net>
+    </com.cloudbees.jenkins.plugins.okidocki.DockerBuildWrapper>
+    <%- end -%>
+    <hudson.plugins.ansicolor.AnsiColorBuildWrapper plugin="ansicolor@0.5.2">
+      <colorMapName>xterm</colorMapName>
+    </hudson.plugins.ansicolor.AnsiColorBuildWrapper>
+  </buildWrappers>
+</project>

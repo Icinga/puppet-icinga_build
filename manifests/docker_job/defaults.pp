@@ -12,6 +12,7 @@
 class icinga_build::docker_job::defaults(
   $jenkins_label   = '',
   $base_image      = '',
+  $build_image     = '',
   $docker_registry = '',
   $publish         = false,
 ) { }
