@@ -7,6 +7,7 @@ define icinga_build::docker_job (
   $git_repo           = undef,
   $git_branch         = 'master',
   $custom_shell       = undef,
+  $scm_trigger        = undef,
   $base_image         = $::icinga_build::docker_job::defaults::base_image,
   $build_image        = $::icinga_build::docker_job::defaults::build_image,
   $jenkins_label      = $::icinga_build::docker_job::defaults::jenkins_label,
