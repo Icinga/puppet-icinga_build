@@ -77,6 +77,14 @@ if [ "$release_type" == "release" ] ; then
       suse_repository_path="home:/lazyfrosch:/devel:/tools"
     fi
 
+	if [ "$suse_version" = 11_SP4 ]; then
+		sudo sed -i 's/enabled=0/enabled=1/' /etc/zypp/repos.d/nu_novell_com:SLE11-Security-Module.repo
+		sudo zypper refresh
+		sudo zypper install -y openssl1 wget-openssl1
+		sudo update-alternatives --set wget /usr/bin/wget.openssl1
+		sudo su -c 'echo "check_certificate = no" >> /etc/wgetrc'
+	fi
+
     sudo zypper addrepo http://download.opensuse.org/repositories/"$suse_repository_path"/SLE_"$suse_version"/"$suse_repository".repo
     sudo zypper --gpg-auto-import-keys --non-interactive --no-gpg-checks install spectool
   elif [ "$os" = opensuse ]; then
