@@ -79,6 +79,8 @@ if [ "$release_type" == "release" ] ; then
 
 	if [ "$suse_version" = 11_SP4 ]; then
 		sudo sed -i 's/enabled=0/enabled=1/' /etc/zypp/repos.d/nu_novell_com:SLE11-Security-Module.repo
+		# Workaround for missing key
+		sudo rpm --import http://packages.icinga.com/icinga.key
 		sudo zypper refresh
 		sudo zypper install -y openssl1 wget-openssl1
 		sudo update-alternatives --set wget /usr/bin/wget.openssl1
