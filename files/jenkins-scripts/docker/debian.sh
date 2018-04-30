@@ -102,18 +102,23 @@ APT
   chroot "$destdir" apt-key adv --keyserver keyserver.ubuntu.com --recv-key 82B129927FA3303E
 fi
 
+if [ "$release" = "xenial" ]; then
+  # TODO: why?
+  additional_packages="libwxgtk3.0-dev"
+fi
+if [ "$release" = "bionic" ]; then
+  additional_packages="gnupg"
+fi
+
 chroot ${destdir} apt-get update
 chroot ${destdir} apt-get install \
   --no-install-recommends -y --force-yes \
   ccache build-essential:native bison ssh-client cmake flex g++ libboost-dev \
   libboost-program-options-dev libboost-regex-dev libboost-system-dev libboost-test-dev \
   libboost-thread-dev libssl-dev libyajl-dev fakeroot git \
-  devscripts sudo curl python wget pkg-config ca-certificates libwww-perl libcrypt-ssleay-perl
+  devscripts sudo curl python wget pkg-config ca-certificates libwww-perl libcrypt-ssleay-perl \
+  "$additional_packages"
 
-if [ "$release" = "xenial" ]; then
-  # TODO: why?
-  chroot ${destdir} apt-get install -y libwxgtk3.0-dev
-fi
 
 # Add jenkins user
 chroot $destdir groupadd -g 1000 jenkins
