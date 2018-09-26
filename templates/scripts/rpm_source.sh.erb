@@ -87,11 +87,20 @@ if [ "$release_type" == "release" ] ; then
 		sudo su -c 'echo "check_certificate = no" >> /etc/wgetrc'
 	fi
 
-    sudo zypper addrepo http://download.opensuse.org/repositories/"$suse_repository_path"/SLE_"$suse_version"/"$suse_repository".repo
-    sudo zypper --gpg-auto-import-keys --non-interactive --no-gpg-checks install spectool
+    if [ ! -e /etc/zypp/repos.d/devel_tools.repo ]; then
+      sudo zypper addrepo http://download.opensuse.org/repositories/"$suse_repository_path"/SLE_"$suse_version"/"$suse_repository".repo
+    fi
+
+    if ! rpm -q spectool &>/dev/null; then
+      sudo zypper --gpg-auto-import-keys --non-interactive --no-gpg-checks install spectool
+    fi
   elif [ "$os" = opensuse ]; then
-    sudo zypper addrepo http://download.opensuse.org/repositories/devel:tools/openSUSE_Leap_"$dist"/devel:tools.repo
-    sudo zypper --gpg-auto-import-keys --non-interactive --no-gpg-checks install spectool
+    if [ ! -e /etc/zypp/repos.d/devel_tools.repo ]; then
+      sudo zypper addrepo http://download.opensuse.org/repositories/devel:tools/openSUSE_Leap_"$dist"/devel:tools.repo
+    fi
+    if ! rpm -q spectool &>/dev/null; then
+      sudo zypper --gpg-auto-import-keys --non-interactive --no-gpg-checks install spectool
+    fi
   fi
 
 	spectool -g rpmbuild/SPECS/*.spec
