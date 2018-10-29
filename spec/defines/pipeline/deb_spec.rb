@@ -32,7 +32,8 @@ describe 'icinga_build::pipeline::deb' do
             control_branch:  'snapshot',
             upstream_repo:   'https://github.com/Icinga/icinga2.git',
             upstream_branch: 'support/x.x',
-            release_type:    'snapshot'
+            release_type:    'snapshot',
+            docker_registry_credentials: 'yoloops'
           }
         end
 
@@ -51,6 +52,7 @@ describe 'icinga_build::pipeline::deb' do
             .with_config(%r{<assignedNode>docker-test</assignedNode>})
             .with_config(%r{<image>private-registry:5000/icinga/debian-jessie-x86_64</image>})
             .with_config(%r{<projectNameList>\s*<string>deb-debian-jessie-1binary</string>\s*</projectNameList>}m)
+            .with_config(%r{<dockerRegistryCredentials>yoloops</dockerRegistryCredentials>})
             .with_config(/project="icinga2"/)
             .with_config(/os="debian"/)
             .with_config(/dist="jessie"/)
@@ -68,6 +70,7 @@ describe 'icinga_build::pipeline::deb' do
             .with_config(%r{<upstreamProjects>deb-debian-jessie-0source</upstreamProjects>})
             .with_config(%r{<hudson.matrix.TextAxis>\s*<name>arch</name>\s*<values>\s*<string>x86_64</string>\s*<string>x86</string>\s*</values>\s*</hudson.matrix.TextAxis>}m)
             .with_config(%r{<project>icinga2-snapshot/deb-debian-jessie-0source</project>}) # copy artifacts from
+            .with_config(%r{<dockerRegistryCredentials>yoloops</dockerRegistryCredentials>})
             .with_config(/project="icinga2"/)
             .with_config(/os="debian"/)
             .with_config(/dist="jessie"/)
@@ -77,6 +80,7 @@ describe 'icinga_build::pipeline::deb' do
 
         it 'should have a test job' do
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-2test')
+            .with_config(%r{<dockerRegistryCredentials>yoloops</dockerRegistryCredentials>})
             .with_config(/matrix-project/)
             .with_config(/project="icinga2"/)
             .with_config(/control_deb="#{Regexp.escape(params[:control_deb])}"/)
@@ -89,6 +93,7 @@ describe 'icinga_build::pipeline::deb' do
 
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-3-publish')
             .with_config(/<project>/)
+            .with_config(%r{<dockerRegistryCredentials>yoloops</dockerRegistryCredentials>})
             .with_config(/project="icinga2"/)
             .with_config(/os="debian"/)
             .with_config(/dist="jessie"/)
@@ -137,6 +142,7 @@ describe 'icinga_build::pipeline::deb' do
         it do
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-0source')
             .with_config(/<url>#{Regexp.escape(params[:control_repo])}<.url>/)
+            .with_config(%r{<dockerRegistryCredentials/>})
             .with_config(/control_deb=$/)
             .with_config(/dpkg-buildpackage/)
         end
@@ -144,6 +150,7 @@ describe 'icinga_build::pipeline::deb' do
         it do
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-1binary')
             .with_config(/matrix-project/)
+            .with_config(%r{<dockerRegistryCredentials/>})
             .with_config(/project="icinga2"/)
             .with_config(/dpkg-buildpackage/)
         end
@@ -151,6 +158,7 @@ describe 'icinga_build::pipeline::deb' do
         it 'should have a test job' do
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-2test')
             .with_config(/matrix-project/)
+            .with_config(%r{<dockerRegistryCredentials/>})
             .with_config(/project="icinga2"/)
             .with_config(/control_deb=$/)
             .with_config(%r{/start_test.sh})
@@ -159,6 +167,7 @@ describe 'icinga_build::pipeline::deb' do
         it 'should have a publish job' do
           should contain_jenkins_job('icinga2-snapshot/deb-debian-jessie-3-publish')
             .with_config(/curl_aptly/)
+            .with_config(%r{<dockerRegistryCredentials/>})
         end
       end
     end

@@ -21,4 +21,5 @@ class icinga_build::pipeline::defaults(
   $aptly_server   = undef,
   $aptly_user     = undef,
   $aptly_password = undef,
+  $docker_registry_credentials = undef,
 ) { }

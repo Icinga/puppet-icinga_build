@@ -20,6 +20,7 @@ define icinga_build::pipeline::deb (
   $upstream_repo   = undef,
   $upstream_branch = undef,
   $scm_trigger     = undef,
+  $docker_registry_credentials = $icinga_build::pipeline::defaults::docker_registry_credentials,
 ) {
   validate_re($ensure, '^(present|absent)$')
 

@@ -109,7 +109,11 @@
         <image><%= @_docker_image_source.encode(xml: :text) %></image>
       </selector>
       <dockerHost plugin="docker-commons@1.4.0"/>
+      <% if @docker_registry_credentials -%>
+      <dockerRegistryCredentials><%= @docker_registry_credentials.encode(xml: :text) %></dockerRegistryCredentials>
+      <% else -%>
       <dockerRegistryCredentials/>
+      <% end -%>
       <verbose>false</verbose>
       <volumes class="empty-list"/>
       <privileged>false</privileged>
