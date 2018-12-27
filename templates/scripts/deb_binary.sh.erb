@@ -32,19 +32,18 @@ sudo apt-get update
 
 # TODO: move to image
 if [ -n "$EATMYDATA" ]; then
-    sudo apt-get install -y --force-yes eatmydata
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --force-yes eatmydata
 fi
 
 rm -rf "$project"
 dpkg-source -x "$WORKSPACE/<%= @pipeline -%>-$arch"/*.dsc "$project"
- 
 
 cd "$project"
 
 # Installing dependencies
 # TODO: move to image
-sudo $EATMYDATA apt-get install --no-install-recommends -y pbuilder aptitude
-sudo $EATMYDATA setarch ${target_arch} /usr/lib/pbuilder/pbuilder-satisfydepends
+sudo DEBIAN_FRONTEND=noninteractive $EATMYDATA apt-get install --no-install-recommends -y pbuilder aptitude
+sudo DEBIAN_FRONTEND=noninteractive $EATMYDATA setarch ${target_arch} /usr/lib/pbuilder/pbuilder-satisfydepends
 
 # Building the package
 binopts=''
