@@ -39,7 +39,7 @@ case "$os" in
     # TODO: can we downgrade this to a simple ref again?
     # images should be build with clean meta data in the future...
     sudo setarch "$target_arch" zypper clean -a
-    sudo setarch "$target_arch" zypper --non-interactive --no-gpg-checks --gpg-auto-import-keys --force --services ref
+    sudo setarch "$target_arch" zypper --non-interactive --no-gpg-checks --gpg-auto-import-keys ref --force --services
     sudo setarch "$target_arch" zypper --non-interactive install `rpm -qpR "${source_rpm}"`
     ;;
   *)
