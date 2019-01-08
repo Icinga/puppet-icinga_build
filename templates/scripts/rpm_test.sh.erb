@@ -42,7 +42,7 @@ EOF"
     # TODO: can we downgrade this to a simple ref again?
     # images should be build with clean meta data in the future...
     sudo setarch "$target_arch" zypper clean -a
-    sudo setarch "$target_arch" zypper --non-interactive --no-gpg-checks --gpg-auto-import-keys ref
+    sudo setarch "$target_arch" zypper --non-interactive --no-gpg-checks --gpg-auto-import-keys --force --services ref
 
     # Just use the local dir, zypper will take care of the rest!
     sudo setarch "$target_arch" zypper addrepo --no-gpgcheck "$repo" local
