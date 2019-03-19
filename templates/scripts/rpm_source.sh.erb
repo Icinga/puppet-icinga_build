@@ -91,15 +91,21 @@ if [ "$release_type" == "release" ] ; then
       # Use lazyfrosch's mirror, opensuse.org is unreliable
       if [ "$suse_version" = 15_SP0 ]; then
         sudo zypper addrepo http://download.opensuse.org/repositories/home:/lazyfrosch:/devel:/tools/SLE_15/home:lazyfrosch:devel:tools.repo devel_tools
-      else
+      elif [ "$suse_version" != 11_SP4 ]; then
         sudo zypper addrepo http://download.opensuse.org/repositories/home:/lazyfrosch:/devel:/tools/SLE_"$suse_version"/home:lazyfrosch:devel:tools.repo devel_tools
       fi
 
     fi
 
     if ! rpm -q spectool &>/dev/null; then
-      sudo zypper --gpg-auto-import-keys --non-interactive --no-gpg-checks install spectool
+      if [ "$suse_version" = 11_SP4 ]; then
+        # zypper ref on SLES11 throws invalid metadata, install this directly #hatehatehate.
+        sudo zypper install -y http://download.opensuse.org/repositories/home:/lazyfrosch:/devel:/tools/SLE_11_SP4/noarch/spectool-1.0.11-2.1.noarch.rpm
+      else
+        sudo zypper --gpg-auto-import-keys --non-interactive --no-gpg-checks install spectool
+      fi
     fi
+
   elif [ "$os" = opensuse ]; then
     # Use lazyfrosch's mirror, opensuse.org is unreliable
     if [ ! -e /etc/zypp/repos.d/devel_tools.repo ]; then
